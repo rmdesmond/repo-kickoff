@@ -5,6 +5,7 @@
 # tools only: see docs/decisions/0001-dependency-free-bash.md.
 
 set -eu
+set -o pipefail
 
 REPO_KICKOFF_VERSION=0.0.0
 
@@ -24,8 +25,9 @@ real_dir_of() {
 }
 
 # The clone repo-kickoff runs from, and its catalog of types.
+# REPO_KICKOFF_TYPES points at another catalog, for tests.
 ROOT=$(cd -P "$(real_dir_of "$0")/.." && pwd)
-TYPES_DIR=$ROOT/types
+TYPES_DIR=${REPO_KICKOFF_TYPES:-$ROOT/types}
 
 usage() {
 	cat <<EOF
@@ -42,11 +44,52 @@ Types are read from: $TYPES_DIR
 EOF
 }
 
+# Report an error and exit 1.
+die() {
+	printf 'repo-kickoff: %s\n' "$@" >&2
+	exit 1
+}
+
 # Report a usage error and exit 2.
 usage_error() {
 	printf 'repo-kickoff: %s\n\n' "$1" >&2
 	usage >&2
 	exit 2
+}
+
+# Print the known types, separated by ", ", or "(none)".
+known_types() {
+	local dir list=""
+	for dir in "$TYPES_DIR"/*/; do
+		[ -d "$dir" ] || continue
+		dir=${dir%/}
+		list="$list${list:+, }${dir##*/}"
+	done
+	echo "${list:-(none)}"
+}
+
+# Replace {{NAME}} with $NAME in standard input. NAME is escaped for sed.
+substitute() {
+	local escaped
+	escaped=$(printf '%s' "$NAME" | sed 's/[\/&]/\\&/g')
+	LC_ALL=C sed "s/{{NAME}}/$escaped/g"
+}
+
+# generate TYPE DEST: copy the type's template to DEST, replacing {{NAME}}
+# in file contents and in file and folder names, and keeping executable bits.
+generate() {
+	local template=$TYPES_DIR/$1/template dest=$2 path out
+	mkdir "$dest"
+	(cd "$template" && find . -type d) | while IFS= read -r path; do
+		mkdir -p "$dest/$(printf '%s' "$path" | substitute)"
+	done
+	(cd "$template" && find . -type f) | while IFS= read -r path; do
+		out=$dest/$(printf '%s' "$path" | substitute)
+		substitute <"$template/$path" >"$out"
+		if [ -x "$template/$path" ]; then
+			chmod +x "$out"
+		fi
+	done
 }
 
 main() {
@@ -95,8 +138,19 @@ main() {
 	[ -n "$type" ] || usage_error "missing <type>"
 	[ -n "$name" ] || usage_error "missing <name>"
 
-	echo "repo-kickoff: generating repositories is not implemented yet" >&2
-	return 1
+	if [ ! -d "$TYPES_DIR/$type" ]; then
+		die "unknown type: $type" "known types: $(known_types)"
+	fi
+	if [ ! -d "$TYPES_DIR/$type/template" ]; then
+		die "type $type has no template folder: $TYPES_DIR/$type/template"
+	fi
+	if [ -e "$name" ] || [ -L "$name" ]; then
+		die "$name already exists"
+	fi
+
+	NAME=$name
+	generate "$type" "$name"
+	echo "Created $name from the $type type."
 }
 
 main "$@"
