@@ -26,6 +26,6 @@ pipeline:
       enabled: true
       run: "tests/run.sh unit"
     integration:
-      enabled: false
-      reason: "not set up yet: T-005 adds it"
+      enabled: true
+      run: "tests/run.sh integration"
   extra_stages: []
