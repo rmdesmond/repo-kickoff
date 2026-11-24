@@ -2,7 +2,7 @@
 
 Generate starter repositories from a catalog of project types, teaching new types with Claude
 
-Status: early development. Known types work; teaching unknown types with Claude is planned (see [the plan](docs/plan/PLAN.md), milestone M3).
+Status: early development. See [the plan](docs/plan/PLAN.md).
 
 `repo-kickoff bash-cli greet` creates a `greet/` folder holding the bare bones of a bash command-line tool: the command, a README, a `.gitignore` and a smoke test. Each kind of project is a **type** in repo-kickoff's catalog, a folder of template files. repo-kickoff needs only bash (3.2 or later, so macOS's own bash works) and the usual POSIX tools, on macOS or Linux.
 
@@ -82,6 +82,38 @@ ok: bash-cli has a description and a template, and its smoke test passes
 ```
 
 `repo-kickoff --help` shows every option.
+
+## Teach a new type
+
+Ask for a type the catalog doesn't have, and repo-kickoff can have Claude add it ([decision 0003](docs/decisions/0003-teach-types-with-claude.md)). At a terminal, it asks first:
+
+```
+The catalog has no python-cli type. Ask the AI command to add it? [y/N]
+```
+
+On a yes, it asks for the name if it's missing, then:
+
+1. runs Claude Code (`claude -p`) with a prompt that describes what a type is, from `lib/teach-prompt.md`. Claude may edit files only in the catalog, and run only a short list of commands, among them `repo-kickoff --check-type`.
+2. checks the new type with `--check-type`. If Claude fails, or the type fails its check, repo-kickoff removes the half-made type and shows the problems.
+3. generates your repository from the new type, the same way it does for every type, and reminds you to review and commit `types/<type>/`.
+
+From then on the type is in your clone's catalog, and asking for it again needs no AI. Commit it, and every clone gets it.
+
+Without a terminal, repo-kickoff won't call the AI unless told to with `--yes`:
+
+```console
+$ repo-kickoff python-cli mytool
+repo-kickoff: unknown type: python-cli
+repo-kickoff: known types: bash-cli
+repo-kickoff: to have the AI command add it, run again with --yes (or at a terminal)
+$ repo-kickoff --yes python-cli mytool
+```
+
+`repo-kickoff --teach <type>` adds and checks a type without generating a repository.
+
+Teaching needs [Claude Code](https://claude.com/claude-code) installed and signed in; it runs on your account. Known types never need it. If the catalog is in a git working copy, repo-kickoff warns about anything Claude changed outside the new type's folder.
+
+To use another AI command, set `REPO_KICKOFF_AI` to an executable. repo-kickoff runs it as `<command> <type> <catalog> <prompt-file>`, and it must write `<catalog>/<type>/`. The tests use a fake one, `tests/fixtures/fake-ai.sh`.
 
 ## The catalog
 

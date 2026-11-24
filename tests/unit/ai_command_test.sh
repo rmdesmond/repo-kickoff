@@ -16,6 +16,7 @@ setup() {
 	export REPO_KICKOFF_AI=$FAKE_AI
 	export FAKE_AI_LOG=$TEST_TMP/ai.log
 	export TMPDIR=$TEST_TMP/private-tmp
+	export FAKE_AI
 }
 
 test_teach_calls_the_ai_with_the_type_and_the_catalog() {
@@ -54,7 +55,7 @@ test_the_ai_gets_no_terminal_input() {
 	cat >ai.sh <<'EOF'
 #!/bin/sh
 if read -r line; then echo "read: $line" >&2; exit 1; fi
-mkdir -p "$2/$1"
+exec "$FAKE_AI" "$@"
 EOF
 	chmod +x ai.sh
 	echo "an answer meant for repo-kickoff" >answers
@@ -116,7 +117,7 @@ test_default_ai_runs_claude_print_mode_with_limited_tools() {
 #!/bin/sh
 pwd >"$FAKE_AI_LOG.cwd"
 for arg in "$@"; do printf '%s\n' "$arg"; done >"$FAKE_AI_LOG.args"
-mkdir -p "$REPO_KICKOFF_TYPES/python-cli"
+FAKE_AI_LOG="" "$FAKE_AI" python-cli "$PWD" /dev/null
 EOF
 	chmod +x bin/claude
 	PATH=$TEST_TMP/bin:$PATH run "$KICKOFF" --teach python-cli
