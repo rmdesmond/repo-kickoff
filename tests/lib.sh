@@ -3,7 +3,8 @@
 # defines functions named test_*. tests/run.sh calls run_tests on each file.
 #
 # Each test function runs in its own subshell, with `set -e`, inside a fresh
-# temporary folder ($TEST_TMP) that is removed afterwards. A test fails when
+# temporary folder ($TEST_TMP) that is removed afterwards. Its standard input
+# is /dev/null, never a terminal, so nothing waits for an answer. A test fails when
 # an assertion fails or any command in it fails.
 
 # The repository root, for tests that run the project's commands.
@@ -87,7 +88,7 @@ run_tests() {
 			cd "$TEST_TMP" || exit 1
 			set -e
 			"$name"
-		) >"$base/log" 2>&1
+		) </dev/null >"$base/log" 2>&1
 		status=$?
 		if [ "$status" -eq 0 ]; then
 			printf 'ok   %s: %s\n' "$file" "$name"

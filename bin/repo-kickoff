@@ -31,17 +31,21 @@ TYPES_DIR=${REPO_KICKOFF_TYPES:-$ROOT/types}
 
 usage() {
 	cat <<EOF
-Usage: repo-kickoff [--dest DIR] <type> <name>
+Usage: repo-kickoff [--dest DIR] [--interactive] [<type> [<name>]]
        repo-kickoff --list
        repo-kickoff --help | --version
 
 Generate a starter repository named <name> from the catalog type <type>.
+At a terminal, a missing <type> or <name> is asked for.
 Names and types are lower-case letters, digits and dashes, starting with a
 letter.
 
 Options:
   --dest DIR   create the repository in DIR/<name> (default: ./<name>)
   --list       list the known types and exit
+  --interactive
+               ask for a missing <type> or <name> even when standard input
+               isn't a terminal, reading the answers from it
   -h, --help   show this help and exit
   --version    show the version and exit
 
@@ -119,6 +123,63 @@ list_types() {
 	fi
 }
 
+# Read one line of standard input into the variable named $1. A last line
+# without a newline counts; end of input with nothing read fails.
+read_answer() {
+	local line=""
+	IFS= read -r line || [ -n "$line" ] || return 1
+	eval "$1=\$line"
+}
+
+# Ask which type to use, showing the numbered types on stderr, until the
+# answer is a number from the list or a type's name. Prints the type.
+ask_type() {
+	local types count answer
+	[ "$(known_types)" != "(none)" ] || die "no types in $TYPES_DIR"
+	types=$(list_types)
+	count=$(printf '%s\n' "$types" | wc -l | tr -d ' ')
+	echo "Known types:" >&2
+	printf '%s\n' "$types" | awk '{ printf "  %d) %s\n", NR, $0 }' >&2
+	while :; do
+		printf 'Type (number or name): ' >&2
+		read_answer answer || die "no answer for the type"
+		case $answer in
+		"") ;;
+		*[!0-9]*)
+			if is_valid_name "$answer" && [ -d "$TYPES_DIR/$answer" ]; then
+				echo "$answer"
+				return 0
+			fi
+			;;
+		*)
+			if [ "$answer" -ge 1 ] && [ "$answer" -le "$count" ]; then
+				printf '%s\n' "$types" | sed -n "${answer}p" | awk '{ print $1 }'
+				return 0
+			fi
+			;;
+		esac
+		echo "Not a known type: '$answer'" >&2
+	done
+}
+
+# ask_name PREFIX: ask for the new repository's name until it's valid and
+# PREFIX<name> doesn't exist. Prints the name.
+ask_name() {
+	local prefix=$1 answer
+	while :; do
+		printf 'Name of the new repository: ' >&2
+		read_answer answer || die "no answer for the name"
+		if ! is_valid_name "$answer"; then
+			echo "Not a valid name: '$answer' (use lower-case letters, digits and dashes, starting with a letter)" >&2
+		elif [ -e "$prefix$answer" ] || [ -L "$prefix$answer" ]; then
+			echo "$prefix$answer already exists" >&2
+		else
+			echo "$answer"
+			return 0
+		fi
+	done
+}
+
 # Replace {{NAME}} with $NAME in standard input. NAME is escaped for sed.
 substitute() {
 	local escaped
@@ -144,7 +205,7 @@ generate() {
 }
 
 main() {
-	local type="" name="" dest_dir="" arg target
+	local type="" name="" dest_dir="" interactive="" arg prefix target
 	while [ $# -gt 0 ]; do
 		arg=$1
 		shift
@@ -168,6 +229,9 @@ main() {
 		--list)
 			list_types
 			return 0
+			;;
+		--interactive)
+			interactive=yes
 			;;
 		--)
 			break
@@ -198,18 +262,28 @@ main() {
 		shift
 	done
 
-	[ -n "$type" ] || usage_error "missing <type>"
-	[ -n "$name" ] || usage_error "missing <name>"
-	is_valid_name "$type" || usage_error "invalid type: $type"
-	is_valid_name "$name" ||
-		usage_error "invalid name: $name (use lower-case letters, digits and dashes, starting with a letter)"
+	# Ask for what's missing only at a terminal, or with --interactive:
+	# anywhere else, waiting for an answer could hang a script.
+	if [ -z "$interactive" ] && [ ! -t 0 ]; then
+		[ -n "$type" ] || usage_error "missing <type>"
+		[ -n "$name" ] || usage_error "missing <name>"
+	fi
 
 	if [ -n "$dest_dir" ]; then
 		[ -d "$dest_dir" ] || die "destination folder does not exist: $dest_dir"
-		target=${dest_dir%/}/$name
+		prefix=${dest_dir%/}/
 	else
 		dest_dir=.
-		target=$name
+		prefix=""
+	fi
+
+	if [ -z "$type" ]; then
+		type=$(ask_type)
+	fi
+	is_valid_name "$type" || usage_error "invalid type: $type"
+	if [ -n "$name" ]; then
+		is_valid_name "$name" ||
+			usage_error "invalid name: $name (use lower-case letters, digits and dashes, starting with a letter)"
 	fi
 
 	if [ ! -d "$TYPES_DIR/$type" ]; then
@@ -218,6 +292,10 @@ main() {
 	if [ ! -d "$TYPES_DIR/$type/template" ]; then
 		die "type $type has no template folder: $TYPES_DIR/$type/template"
 	fi
+	if [ -z "$name" ]; then
+		name=$(ask_name "$prefix")
+	fi
+	target=$prefix$name
 	if [ -e "$target" ] || [ -L "$target" ]; then
 		die "$target already exists"
 	fi
