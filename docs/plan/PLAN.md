@@ -145,9 +145,9 @@ Done when:
 ### T-010: Write the README
 Depends on: T-008, T-009
 Done when:
-- [ ] `README.md` covers installing from a clone with a symlink, usage with arguments and prompts, `--list`, `--check-type`, and the catalog layout
-- [ ] It explains how to add a type by hand and check it
-- [ ] Every command shown in it was run and its output copied from the run
+- [x] `README.md` covers installing from a clone with a symlink, usage with arguments and prompts, `--list`, `--check-type`, and the catalog layout
+- [x] It explains how to add a type by hand and check it
+- [x] Every command shown in it was run and its output copied from the run
 
 ### T-011: Integration test: everyday use
 Depends on: T-008, T-009
