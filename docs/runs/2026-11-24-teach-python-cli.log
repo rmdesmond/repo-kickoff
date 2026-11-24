@@ -1,0 +1,26 @@
+$ repo-kickoff --yes python-cli demo
+started 2026-11-24T22:44:57Z
+repo-kickoff: asking the AI command to add the python-cli type: /Users/randall/Desktop/engineering/software/repos/repo-kickoff/lib/ai-claude.sh
+I've added the `python-cli` type. The check now prints `ok: python-cli has a description and a template, and its smoke test passes`, and shellcheck reports nothing on `tests/smoke.sh`. The first check failed because of a wrong flag in the smoke test's unit-test step; I fixed that and reran it.
+
+Files in `types/python-cli/`:
+
+- **`description`**: "A command-line tool written in Python, packaged with pyproject.toml".
+- **`template/pyproject.toml`**: the project and its command are both named `{{NAME}}`. The command points to `app.cli:main`, and the version is read from the package.
+- **`template/src/app/`**: the package.
+  - `__init__.py` holds the version, `0.1.0`.
+  - `__main__.py` lets you run it with `python -m app`.
+  - `cli.py` uses argparse. It prints `{{NAME}}: placeholder - nothing implemented yet` and supports `--help` and `--version`.
+- **`template/tests/test_cli.py`**: unit tests using only the standard library, covering the placeholder line, `--version`, and that an unknown option exits with code 2.
+- **`template/tests/smoke.sh`** (executable): checks that `python3` is present and at least 3.8, and says so clearly if not. It then runs the program straight from `src/` and checks its output, `--help` and `--version`, and runs the unit tests. It installs nothing and doesn't write `.pyc` files.
+- **`template/.gitignore`**: the usual Python build, virtual-environment and cache folders, plus the OS and editor entries from `bash-cli`.
+- **`template/README.md`**: titled `# {{NAME}}`, with install, usage, layout and test instructions.
+
+**Decision for you:** the Python package is always called `app`, whatever the project name. Python package names can't contain dashes, and the template can only substitute `{{NAME}}` as-is. The command and the project are still named `{{NAME}}`, and the README tells developers how to rename the package. The downside is that `app` is a common name and could clash with another installed package. If you'd prefer a different fixed name, it's a quick change.
+repo-kickoff: checking the new python-cli type
+ok: python-cli has a description and a template, and its smoke test passes
+Added the python-cli type to /Users/randall/Desktop/engineering/software/repos/repo-kickoff/types/python-cli.
+Review it, then commit it to keep it: git -C /Users/randall/Desktop/engineering/software/repos/repo-kickoff add types/python-cli
+Created demo from the python-cli type.
+exit 0
+ended 2026-11-24T22:52:39Z
