@@ -173,13 +173,13 @@ Done when:
 ### T-013: Teach an unknown type
 Depends on: T-012
 Done when:
-- [ ] An unknown type asks for confirmation before calling the AI; `--yes` skips the question; without a terminal and without `--yes`, it refuses and exits 1
-- [ ] After the AI runs, the type checker runs on the new type
-- [ ] If the AI fails or the check fails, the partial `types/<type>/` is removed and the problems are shown
-- [ ] If the check passes, the target repository is generated from the new type, and repo-kickoff reminds you to review and commit `types/<type>/`
-- [ ] If the catalog is in a git working copy, changes the AI made outside `types/<type>/` are reported as a warning
-- [ ] The README explains teaching a type
-- [ ] Unit tests use fake AIs that write a good type, write a broken type, and exit non-zero
+- [x] An unknown type asks for confirmation before calling the AI; `--yes` skips the question; without a terminal and without `--yes`, it refuses and exits 1
+- [x] After the AI runs, the type checker runs on the new type
+- [x] If the AI fails or the check fails, the partial `types/<type>/` is removed and the problems are shown
+- [x] If the check passes, the target repository is generated from the new type, and repo-kickoff reminds you to review and commit `types/<type>/`
+- [x] If the catalog is in a git working copy, changes the AI made outside `types/<type>/` are reported as a warning
+- [x] The README explains teaching a type
+- [x] Unit tests use fake AIs that write a good type, write a broken type, and exit non-zero
 
 ### T-014: Integration test: teach, then reuse
 Depends on: T-013
