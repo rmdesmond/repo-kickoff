@@ -1,0 +1,30 @@
+forge: github
+tracker: github
+owner: rmdesmond
+repo: repo-kickoff
+default_branch: main
+visibility: private
+merge_method: squash
+release:
+  versioning: semver
+  strategy: trunk
+  tag_prefix: v
+  version_files: []
+review:
+  required_approvals: 0
+  code_owners: false
+pipeline:
+  stages:
+    lint:
+      enabled: true
+      run: "git ls-files -z 'bin/*' '*.sh' | xargs -0 -r shellcheck"
+    build:
+      enabled: false
+      reason: "bash scripts; nothing to compile"
+    unit:
+      enabled: false
+      reason: "not set up yet: T-001 adds it"
+    integration:
+      enabled: false
+      reason: "not set up yet: T-005 adds it"
+  extra_stages: []
