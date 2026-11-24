@@ -16,7 +16,7 @@ Don't create, change or delete anything outside it.
         tests/smoke.sh     required, executable: exits 0 when the generated repository works
         ...                every other file the bare-bones project needs
 
-When repo-kickoff generates a repository named `<name>` from the type, it copies `template/` to `<name>/` and replaces every `{{NAME}}` with the name, in file contents and in file and folder names: `template/bin/{{NAME}}` becomes `greet/bin/greet`. Names are lower-case letters, digits and dashes, starting with a letter, so a name like `my-tool` can appear where the language needs something else (a Python package name can't contain `-`, for example): write the template so it works with dashed names. Executable files stay executable. Nothing else in a template is special: there are no other placeholders, no loops and no conditions.
+When repo-kickoff generates a repository named `<name>` from the type, it copies `template/` to `<name>/` and replaces every `{{NAME}}` with the name, in file contents and in file and folder names: `template/bin/{{NAME}}` becomes `greet/bin/greet`. Names are lower-case letters, digits and dashes, starting with a letter, so a name like `my-tool` can appear where the language needs something else (a Python package name can't contain `-`, for example): write the template so it works with dashed names. Where the language needs an identifier that a dashed name can't be, use a fixed, specific identifier instead of `{{NAME}}`, and say in the template's README what it is and how to rename it. Executable files stay executable. Nothing else in a template is special: there are no other placeholders, no loops and no conditions.
 
 ## What the template must contain
 
@@ -27,6 +27,10 @@ The bare bones of a `{{TYPE}}` project, and no more:
 - `tests/smoke.sh`, executable, starting with `#!/usr/bin/env bash`. repo-kickoff runs it from the generated repository's root, with no network, on macOS and on Linux. It exits 0 only when the generated project works: it builds or runs the placeholder and checks its output. It must not install anything or download anything. Use only tools that are normally present for this type of project, and fail with a clear message if one is missing.
 
 Keep shell scripts compatible with bash 3.2 and lint-clean under shellcheck, including before `{{NAME}}` is replaced (quote it: `cmd="bin/{{NAME}}"`).
+
+## Nobody can answer questions
+
+You're running without a person to reply. Don't ask questions or leave decisions open: where there's a choice, make a reasonable one, and record it in the template's README if a developer would want to know.
 
 ## Check your work
 
