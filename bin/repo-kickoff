@@ -31,12 +31,15 @@ TYPES_DIR=${REPO_KICKOFF_TYPES:-$ROOT/types}
 
 usage() {
 	cat <<EOF
-Usage: repo-kickoff <type> <name>
+Usage: repo-kickoff [--dest DIR] <type> <name>
        repo-kickoff --help | --version
 
 Generate a starter repository named <name> from the catalog type <type>.
+Names and types are lower-case letters, digits and dashes, starting with a
+letter.
 
 Options:
+  --dest DIR   create the repository in DIR/<name> (default: ./<name>)
   -h, --help   show this help and exit
   --version    show the version and exit
 
@@ -56,6 +59,31 @@ usage_error() {
 	usage >&2
 	exit 2
 }
+
+# is_valid_name WORD: WORD is a lower-case letter followed by lower-case
+# letters, digits and dashes. Spelled out, since [a-z] can match capitals in
+# some locales.
+is_valid_name() {
+	case $1 in
+	[abcdefghijklmnopqrstuvwxyz]*) ;;
+	*) return 1 ;;
+	esac
+	case $1 in
+	*[!abcdefghijklmnopqrstuvwxyz0123456789-]*) return 1 ;;
+	esac
+	return 0
+}
+
+# The staging folder of a repository being built, removed on exit.
+STAGING=""
+cleanup() {
+	if [ -n "$STAGING" ]; then
+		rm -rf "$STAGING"
+	fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # Print the known types, separated by ", ", or "(none)".
 known_types() {
@@ -93,11 +121,19 @@ generate() {
 }
 
 main() {
-	local type="" name="" arg
+	local type="" name="" dest_dir="" arg target
 	while [ $# -gt 0 ]; do
 		arg=$1
 		shift
 		case $arg in
+		--dest)
+			[ $# -gt 0 ] || usage_error "--dest needs a folder"
+			dest_dir=$1
+			shift
+			;;
+		--dest=*)
+			dest_dir=${arg#--dest=}
+			;;
 		-h | --help)
 			usage
 			return 0
@@ -137,6 +173,17 @@ main() {
 
 	[ -n "$type" ] || usage_error "missing <type>"
 	[ -n "$name" ] || usage_error "missing <name>"
+	is_valid_name "$type" || usage_error "invalid type: $type"
+	is_valid_name "$name" ||
+		usage_error "invalid name: $name (use lower-case letters, digits and dashes, starting with a letter)"
+
+	if [ -n "$dest_dir" ]; then
+		[ -d "$dest_dir" ] || die "destination folder does not exist: $dest_dir"
+		target=${dest_dir%/}/$name
+	else
+		dest_dir=.
+		target=$name
+	fi
 
 	if [ ! -d "$TYPES_DIR/$type" ]; then
 		die "unknown type: $type" "known types: $(known_types)"
@@ -144,13 +191,20 @@ main() {
 	if [ ! -d "$TYPES_DIR/$type/template" ]; then
 		die "type $type has no template folder: $TYPES_DIR/$type/template"
 	fi
-	if [ -e "$name" ] || [ -L "$name" ]; then
-		die "$name already exists"
+	if [ -e "$target" ] || [ -L "$target" ]; then
+		die "$target already exists"
 	fi
 
+	# Build in a staging folder next to the target, then move it into place,
+	# so a failure part-way never leaves a partial repository.
 	NAME=$name
-	generate "$type" "$name"
-	echo "Created $name from the $type type."
+	STAGING=$(mktemp -d "$dest_dir/.repo-kickoff.XXXXXX")
+	generate "$type" "$STAGING/$name"
+	if [ -e "$target" ] || [ -L "$target" ]; then
+		die "$target already exists"
+	fi
+	mv "$STAGING/$name" "$target"
+	echo "Created $target from the $type type."
 }
 
 main "$@"
