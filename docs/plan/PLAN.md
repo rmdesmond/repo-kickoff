@@ -184,8 +184,8 @@ Done when:
 ### T-014: Integration test: teach, then reuse
 Depends on: T-013
 Done when:
-- [ ] A fake AI, which records each call, teaches a new type, and the target repository is generated
-- [ ] A second request for the same type generates a repository without calling the AI
+- [x] A fake AI, which records each call, teaches a new type, and the target repository is generated
+- [x] A second request for the same type generates a repository without calling the AI
 
 ### T-015: Teach python-cli with the real Claude
 Depends on: T-013
