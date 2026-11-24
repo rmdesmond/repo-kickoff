@@ -15,11 +15,11 @@ real_root() {
 test_help_prints_usage_and_exits_0() {
 	run "$KICKOFF" --help
 	assert_status 0
-	assert_contains "$OUT" "Usage: repo-kickoff <type> <name>"
+	assert_contains "$OUT" "Usage: repo-kickoff [--dest DIR] <type> <name>"
 	assert_eq "" "$ERR" "nothing on stderr"
 	run "$KICKOFF" -h
 	assert_status 0
-	assert_contains "$OUT" "Usage: repo-kickoff <type> <name>"
+	assert_contains "$OUT" "Usage: repo-kickoff [--dest DIR] <type> <name>"
 }
 
 test_version_prints_the_version_line() {

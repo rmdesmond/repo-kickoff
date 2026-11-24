@@ -112,11 +112,11 @@ repo-kickoff is ready for everyday use with known types: it prompts for what's m
 ### T-006: Validate names and destination
 Depends on: T-003
 Done when:
-- [ ] Names must match `[a-z][a-z0-9-]*`; anything else is an error that exits 2
-- [ ] `--dest DIR` puts the new repository in `DIR/<name>`; the default is the current directory
-- [ ] An existing destination is refused, and nothing is written
-- [ ] The repository is built in a temporary folder and moved into place, so a failure never leaves a partial repository
-- [ ] Unit tests cover invalid names, `--dest`, an existing destination and a failure part-way through
+- [x] Names must match `[a-z][a-z0-9-]*`; anything else is an error that exits 2
+- [x] `--dest DIR` puts the new repository in `DIR/<name>`; the default is the current directory
+- [x] An existing destination is refused, and nothing is written
+- [x] The repository is built in a temporary folder and moved into place, so a failure never leaves a partial repository
+- [x] Unit tests cover invalid names, `--dest`, an existing destination and a failure part-way through
 
 ### T-007: Add --list
 Depends on: T-004
