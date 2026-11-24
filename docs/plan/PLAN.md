@@ -59,12 +59,12 @@ Extra stages: none
 ### T-001: Add the bash test runner
 Depends on: none
 Done when:
-- [ ] `tests/run.sh unit` and `tests/run.sh integration` run every `tests/<level>/*_test.sh` file and print a pass and fail count
-- [ ] `tests/lib.sh` provides assert helpers (equal, contains, file exists, exit status) and a per-test temporary folder that is removed afterwards
-- [ ] The runner exits non-zero when any test fails, and exits 0 when a level has no tests
-- [ ] Runs on bash 3.2 and bash 5
-- [ ] A self-test in `tests/unit/` proves a failing assertion is reported as a failure
-- [ ] Enable the `unit` stage with `run: tests/run.sh unit`, and render the pipeline again
+- [x] `tests/run.sh unit` and `tests/run.sh integration` run every `tests/<level>/*_test.sh` file and print a pass and fail count
+- [x] `tests/lib.sh` provides assert helpers (equal, contains, file exists, exit status) and a per-test temporary folder that is removed afterwards
+- [x] The runner exits non-zero when any test fails, and exits 0 when a level has no tests
+- [x] Runs on bash 3.2 and bash 5
+- [x] A self-test in `tests/unit/` proves a failing assertion is reported as a failure
+- [x] Enable the `unit` stage with `run: tests/run.sh unit`, and render the pipeline again
 
 ### T-002: Add the repo-kickoff command skeleton
 Depends on: T-001
