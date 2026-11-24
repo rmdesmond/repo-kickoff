@@ -33,6 +33,7 @@ usage() {
 	cat <<EOF
 Usage: repo-kickoff [--dest DIR] [--interactive] [<type> [<name>]]
        repo-kickoff --list
+       repo-kickoff --check-type <type>
        repo-kickoff --help | --version
 
 Generate a starter repository named <name> from the catalog type <type>.
@@ -43,6 +44,10 @@ letter.
 Options:
   --dest DIR   create the repository in DIR/<name> (default: ./<name>)
   --list       list the known types and exit
+  --check-type <type>
+               check that a type is complete: it has a description and a
+               template with tests/smoke.sh, and a repository generated from
+               it passes its smoke test
   --interactive
                ask for a missing <type> or <name> even when standard input
                isn't a terminal, reading the answers from it
@@ -121,6 +126,53 @@ list_types() {
 	if [ "$(known_types)" = "(none)" ]; then
 		echo "repo-kickoff: no types in $TYPES_DIR" >&2
 	fi
+}
+
+# check_type TYPE: report every problem with the type on stderr and return
+# 1, or say it passed and return 0. Generates a sample repository in a
+# temporary folder, which is removed afterwards.
+check_type() {
+	local type=$1 dir problems=0 repo log
+	dir=$TYPES_DIR/$type
+	is_valid_name "$type" || usage_error "invalid type: $type"
+	[ -d "$dir" ] || die "unknown type: $type" "known types: $(known_types)"
+
+	problem() {
+		printf 'repo-kickoff: %s: %s\n' "$type" "$1" >&2
+		problems=$((problems + 1))
+	}
+
+	if [ ! -f "$dir/description" ]; then
+		problem "no description file"
+	elif [ -z "$(sed -n 1p "$dir/description")" ]; then
+		problem "the description's first line is empty"
+	fi
+
+	if [ ! -d "$dir/template" ]; then
+		problem "no template folder"
+	elif [ ! -f "$dir/template/tests/smoke.sh" ]; then
+		problem "no template/tests/smoke.sh"
+	elif [ ! -x "$dir/template/tests/smoke.sh" ]; then
+		problem "template/tests/smoke.sh is not executable"
+	else
+		NAME=kickoff-check
+		STAGING=$(mktemp -d "${TMPDIR:-/tmp}/repo-kickoff-check.XXXXXX")
+		repo=$STAGING/$NAME
+		log=$STAGING/smoke.log
+		generate "$type" "$repo"
+		if ! (cd "$repo" && tests/smoke.sh) </dev/null >"$log" 2>&1; then
+			problem "the smoke test failed in a generated repository; its output:"
+			sed 's/^/    /' "$log" >&2
+		fi
+		rm -rf "$STAGING"
+		STAGING=""
+	fi
+
+	if [ "$problems" -gt 0 ]; then
+		printf 'repo-kickoff: %s: %s problem(s) found\n' "$type" "$problems" >&2
+		return 1
+	fi
+	echo "ok: $type has a description and a template, and its smoke test passes"
 }
 
 # Read one line of standard input into the variable named $1. A last line
@@ -205,7 +257,7 @@ generate() {
 }
 
 main() {
-	local type="" name="" dest_dir="" interactive="" arg prefix target
+	local type="" name="" dest_dir="" interactive="" check="" arg prefix target
 	while [ $# -gt 0 ]; do
 		arg=$1
 		shift
@@ -232,6 +284,14 @@ main() {
 			;;
 		--interactive)
 			interactive=yes
+			;;
+		--check-type)
+			[ $# -gt 0 ] || usage_error "--check-type needs a type"
+			check=$1
+			shift
+			;;
+		--check-type=*)
+			check=${arg#--check-type=}
 			;;
 		--)
 			break
@@ -261,6 +321,12 @@ main() {
 		fi
 		shift
 	done
+
+	if [ -n "$check" ]; then
+		[ -z "$type" ] || usage_error "unexpected argument: $type"
+		check_type "$check"
+		return
+	fi
 
 	# Ask for what's missing only at a terminal, or with --interactive:
 	# anywhere else, waiting for an answer could hang a script.
