@@ -24,6 +24,8 @@ To update, `git pull` in the clone.
 
 ## Usage
 
+For a worked example from install to teaching a type, see [the tutorial](docs/tutorial.md).
+
 Give a type and a name:
 
 ```console
