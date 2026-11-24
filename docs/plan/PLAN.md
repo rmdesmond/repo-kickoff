@@ -137,10 +137,10 @@ Done when:
 ### T-009: Add the type checker
 Depends on: T-004
 Done when:
-- [ ] `repo-kickoff --check-type <type>` checks that the type has a description and a template containing `tests/smoke.sh`
-- [ ] It generates a sample repository in a temporary folder and runs its `tests/smoke.sh`
-- [ ] It reports every problem found, exits 1 if there are any, and leaves nothing behind
-- [ ] Unit tests cover a complete fixture type and broken ones: no description, no template, no smoke test, a failing smoke test
+- [x] `repo-kickoff --check-type <type>` checks that the type has a description and a template containing `tests/smoke.sh`
+- [x] It generates a sample repository in a temporary folder and runs its `tests/smoke.sh`
+- [x] It reports every problem found, exits 1 if there are any, and leaves nothing behind
+- [x] Unit tests cover a complete fixture type and broken ones: no description, no template, no smoke test, a failing smoke test
 
 ### T-010: Write the README
 Depends on: T-008, T-009
