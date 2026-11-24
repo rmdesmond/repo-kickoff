@@ -2,4 +2,142 @@
 
 Generate starter repositories from a catalog of project types, teaching new types with Claude
 
-Status: early development
+Status: early development. Known types work; teaching unknown types with Claude is planned (see [the plan](docs/plan/PLAN.md), milestone M3).
+
+`repo-kickoff bash-cli greet` creates a `greet/` folder holding the bare bones of a bash command-line tool: the command, a README, a `.gitignore` and a smoke test. Each kind of project is a **type** in repo-kickoff's catalog, a folder of template files. repo-kickoff needs only bash (3.2 or later, so macOS's own bash works) and the usual POSIX tools, on macOS or Linux.
+
+## Install
+
+repo-kickoff runs from a clone of this repository. Its catalog of types lives in the clone, so types you add are there to commit ([decision 0002](docs/decisions/0002-used-from-a-clone.md)).
+
+```sh
+git clone git@github.com:rmdesmond/repo-kickoff.git
+ln -s "$PWD/repo-kickoff/bin/repo-kickoff" ~/.local/bin/repo-kickoff   # any folder on your PATH
+```
+
+```console
+$ repo-kickoff --version
+repo-kickoff 0.0.0
+```
+
+To update, `git pull` in the clone.
+
+## Usage
+
+Give a type and a name:
+
+```console
+$ repo-kickoff bash-cli greet
+Created greet from the bash-cli type.
+$ greet/bin/greet
+greet: placeholder - nothing implemented yet
+$ greet/tests/smoke.sh
+smoke: ok
+```
+
+`--dest` creates the repository somewhere other than the current folder:
+
+```console
+$ repo-kickoff --dest projects bash-cli hello
+Created projects/hello from the bash-cli type.
+```
+
+Names (and types) are lower-case letters, digits and dashes, starting with a letter. repo-kickoff never overwrites anything: it refuses an existing destination, and builds the repository in a staging folder before moving it into place, so a failure never leaves half a repository behind.
+
+```console
+$ repo-kickoff bash-cli Greet
+repo-kickoff: invalid name: Greet (use lower-case letters, digits and dashes, starting with a letter)
+...
+$ repo-kickoff bash-cli greet
+repo-kickoff: greet already exists
+```
+
+### Prompts
+
+At a terminal, leave out the type, the name or both, and repo-kickoff asks for them. Choose a type by its number or its name; an invalid answer is asked for again. Without a terminal (in a script, say), missing arguments are an error instead, so nothing waits for an answer. `--interactive` asks anyway and reads the answers from standard input:
+
+```console
+$ printf '1\nmy-tool\n' | repo-kickoff --interactive
+Known types:
+  1) bash-cli  A command-line tool written as a single bash script
+Type (number or name): Name of the new repository: Created my-tool from the bash-cli type.
+```
+
+The prompts go to standard error, so standard output holds only the `Created` line.
+
+### List the types
+
+```console
+$ repo-kickoff --list
+bash-cli  A command-line tool written as a single bash script
+```
+
+### Check a type
+
+`--check-type` checks that a type is complete, by generating a sample repository in a temporary folder and running its smoke test. It reports every problem it finds and exits 1, or exits 0:
+
+```console
+$ repo-kickoff --check-type bash-cli
+ok: bash-cli has a description and a template, and its smoke test passes
+```
+
+`repo-kickoff --help` shows every option.
+
+## The catalog
+
+Each type is a folder in `types/`:
+
+```
+types/<type>/
+  description          one line, shown by --list
+  template/            copied to the new repository
+    tests/smoke.sh     required: exits 0 when the generated repository works
+    ...                any other files and folders
+```
+
+When generating, repo-kickoff copies `template/` to `<name>/`, replacing `{{NAME}}` with the repository's name in every file's contents and in file and folder names (`template/bin/{{NAME}}` becomes `greet/bin/greet`). Executable files stay executable. Nothing else in a template is special.
+
+### Add a type by hand
+
+Make the folder, a description and a template. `--check-type` says what's missing:
+
+```console
+$ mkdir -p types/notes/template/tests
+$ echo "A folder of Markdown notes" > types/notes/description
+$ printf '# {{NAME}}\n\nNotes about {{NAME}}.\n' > types/notes/template/README.md
+$ repo-kickoff --check-type notes
+repo-kickoff: notes: no template/tests/smoke.sh
+repo-kickoff: notes: 1 problem(s) found
+```
+
+Every type needs `template/tests/smoke.sh`: an executable script that exits 0 when a repository generated from the type works. repo-kickoff runs it from the generated repository's root. Here it checks the README is titled with the repository's name:
+
+```sh
+#!/bin/sh
+# Smoke test: the README is titled with the repository name.
+cd "$(dirname "$0")/.."
+name=$(basename "$PWD")
+grep -qx "# $name" README.md
+```
+
+```console
+$ chmod +x types/notes/template/tests/smoke.sh
+$ repo-kickoff --check-type notes
+ok: notes has a description and a template, and its smoke test passes
+```
+
+Then commit `types/notes/`. The integration tests check that every type in the catalog passes `--check-type`.
+
+## Development
+
+```sh
+tests/run.sh unit          # unit tests
+tests/run.sh integration   # integration tests
+git ls-files -z 'bin/*' '*.sh' | xargs -0 -r shellcheck   # lint
+```
+
+The pipeline runs the same commands (`.project/config.yml`). Work follows [the plan](docs/plan/PLAN.md), and choices are recorded in [docs/decisions](docs/decisions/).
+
+## Licence
+
+[MIT](LICENSE)
