@@ -9,7 +9,8 @@ release:
   versioning: semver
   strategy: trunk
   tag_prefix: v
-  version_files: []
+  version_files:
+    - "bin/repo-kickoff:REPO_KICKOFF_VERSION="
 review:
   required_approvals: 0
   code_owners: false
