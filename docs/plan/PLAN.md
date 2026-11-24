@@ -1,6 +1,6 @@
 # Plan: repo-kickoff
 
-Status: draft
+Status: accepted 2026-11-24
 
 repo-kickoff creates the starting skeleton of a new repository from a known project type: a bash CLI, a Python CLI, a C CLI, a C++ library, a PDF generator and so on. You run `repo-kickoff` with a type and a name, as arguments or answered at prompts, and it assembles the target repository from reusable components kept in its own catalog, with no AI involved. When asked for a type it doesn't know, it asks Claude (`claude -p`) to add that type to the catalog, checks the result, and then generates the target repository from it the same AI-free way. From then on the type is created without the AI. Taught types are written into your local clone of repo-kickoff, for you to review and commit.
 
