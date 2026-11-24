@@ -79,12 +79,12 @@ Done when:
 ### T-003: Generate a repo from a catalog type
 Depends on: T-002
 Done when:
-- [ ] `repo-kickoff <type> <name>` copies `types/<type>/template/` to `./<name>`
-- [ ] `{{NAME}}` is replaced in file contents and in file and folder names
-- [ ] Executable bits are kept
-- [ ] An unknown type prints an error naming the known types and exits 1
-- [ ] The catalog folder can be overridden with `REPO_KICKOFF_TYPES`, for tests
-- [ ] Unit tests use a fixture type under `tests/fixtures/types/`
+- [x] `repo-kickoff <type> <name>` copies `types/<type>/template/` to `./<name>`
+- [x] `{{NAME}}` is replaced in file contents and in file and folder names
+- [x] Executable bits are kept
+- [x] An unknown type prints an error naming the known types and exits 1
+- [x] The catalog folder can be overridden with `REPO_KICKOFF_TYPES`, for tests
+- [x] Unit tests use a fixture type under `tests/fixtures/types/`
 
 ### T-004: Add the bash-cli type
 Depends on: T-003
