@@ -69,12 +69,12 @@ Done when:
 ### T-002: Add the repo-kickoff command skeleton
 Depends on: T-001
 Done when:
-- [ ] `bin/repo-kickoff --help` prints usage and exits 0
-- [ ] `bin/repo-kickoff --version` prints `repo-kickoff <version>` from a `REPO_KICKOFF_VERSION=0.0.0` line
-- [ ] Unknown options and missing arguments print usage to stderr and exit 2
-- [ ] The command finds its own folder through one or more symlinks without `readlink -f`
-- [ ] `.project/config.yml` lists `"bin/repo-kickoff:REPO_KICKOFF_VERSION="` under `release.version_files`
-- [ ] Unit tests cover `--help`, `--version`, usage errors and running through a symlink
+- [x] `bin/repo-kickoff --help` prints usage and exits 0
+- [x] `bin/repo-kickoff --version` prints `repo-kickoff <version>` from a `REPO_KICKOFF_VERSION=0.0.0` line
+- [x] Unknown options and missing arguments print usage to stderr and exit 2
+- [x] The command finds its own folder through one or more symlinks without `readlink -f`
+- [x] `.project/config.yml` lists `"bin/repo-kickoff:REPO_KICKOFF_VERSION="` under `release.version_files`
+- [x] Unit tests cover `--help`, `--version`, usage errors and running through a symlink
 
 ### T-003: Generate a repo from a catalog type
 Depends on: T-002
