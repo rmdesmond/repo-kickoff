@@ -99,9 +99,9 @@ Done when:
 ### T-005: Integration test: symlinked command generates bash-cli
 Depends on: T-004
 Done when:
-- [ ] A test symlinks `bin/repo-kickoff` into a temporary folder on `PATH` and runs it from an unrelated directory
-- [ ] The generated repository's command runs and its `tests/smoke.sh` passes
-- [ ] Enable the `integration` stage with `run: tests/run.sh integration`, and render the pipeline again
+- [x] A test symlinks `bin/repo-kickoff` into a temporary folder on `PATH` and runs it from an unrelated directory
+- [x] The generated repository's command runs and its `tests/smoke.sh` passes
+- [x] Enable the `integration` stage with `run: tests/run.sh integration`, and render the pipeline again
 
 ## M2: Usable tool
 
