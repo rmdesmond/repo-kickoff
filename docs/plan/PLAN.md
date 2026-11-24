@@ -152,9 +152,9 @@ Done when:
 ### T-011: Integration test: everyday use
 Depends on: T-008, T-009
 Done when:
-- [ ] Every type in `types/` passes `--check-type`
-- [ ] A piped `--interactive` session generates a `bash-cli` repository whose smoke test passes
-- [ ] An invalid name and an existing destination each leave the file system unchanged
+- [x] Every type in `types/` passes `--check-type`
+- [x] A piped `--interactive` session generates a `bash-cli` repository whose smoke test passes
+- [x] An invalid name and an existing destination each leave the file system unchanged
 
 ## M3: Teach unknown types
 
