@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# repo-kickoff: generate a starter repository from a catalog of project types.
+#
+# Written for bash 3.2 (macOS) as well as bash 4 and 5 (Linux), with POSIX
+# tools only: see docs/decisions/0001-dependency-free-bash.md.
+
+set -eu
+
+REPO_KICKOFF_VERSION=0.0.0
+
+# Print the physical folder holding the file at $1, following any chain of
+# symlinks to it. Portable: no `readlink -f`, which BSD readlink lacks.
+real_dir_of() {
+	local path=$1 dir link
+	while [ -L "$path" ]; do
+		dir=$(cd -P "$(dirname "$path")" && pwd)
+		link=$(readlink "$path")
+		case $link in
+		/*) path=$link ;;
+		*) path=$dir/$link ;;
+		esac
+	done
+	cd -P "$(dirname "$path")" && pwd
+}
+
+# The clone repo-kickoff runs from, and its catalog of types.
+ROOT=$(cd -P "$(real_dir_of "$0")/.." && pwd)
+TYPES_DIR=$ROOT/types
+
+usage() {
+	cat <<EOF
+Usage: repo-kickoff <type> <name>
+       repo-kickoff --help | --version
+
+Generate a starter repository named <name> from the catalog type <type>.
+
+Options:
+  -h, --help   show this help and exit
+  --version    show the version and exit
+
+Types are read from: $TYPES_DIR
+EOF
+}
+
+# Report a usage error and exit 2.
+usage_error() {
+	printf 'repo-kickoff: %s\n\n' "$1" >&2
+	usage >&2
+	exit 2
+}
+
+main() {
+	local type="" name="" arg
+	while [ $# -gt 0 ]; do
+		arg=$1
+		shift
+		case $arg in
+		-h | --help)
+			usage
+			return 0
+			;;
+		--version)
+			echo "repo-kickoff $REPO_KICKOFF_VERSION"
+			return 0
+			;;
+		--)
+			break
+			;;
+		-*)
+			usage_error "unknown option: $arg"
+			;;
+		*)
+			if [ -z "$type" ]; then
+				type=$arg
+			elif [ -z "$name" ]; then
+				name=$arg
+			else
+				usage_error "unexpected argument: $arg"
+			fi
+			;;
+		esac
+	done
+	# Arguments after `--` are positional, even if they start with a dash.
+	while [ $# -gt 0 ]; do
+		if [ -z "$type" ]; then
+			type=$1
+		elif [ -z "$name" ]; then
+			name=$1
+		else
+			usage_error "unexpected argument: $1"
+		fi
+		shift
+	done
+
+	[ -n "$type" ] || usage_error "missing <type>"
+	[ -n "$name" ] || usage_error "missing <name>"
+
+	echo "repo-kickoff: generating repositories is not implemented yet" >&2
+	return 1
+}
+
+main "$@"
