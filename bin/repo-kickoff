@@ -32,6 +32,7 @@ TYPES_DIR=${REPO_KICKOFF_TYPES:-$ROOT/types}
 usage() {
 	cat <<EOF
 Usage: repo-kickoff [--dest DIR] <type> <name>
+       repo-kickoff --list
        repo-kickoff --help | --version
 
 Generate a starter repository named <name> from the catalog type <type>.
@@ -40,6 +41,7 @@ letter.
 
 Options:
   --dest DIR   create the repository in DIR/<name> (default: ./<name>)
+  --list       list the known types and exit
   -h, --help   show this help and exit
   --version    show the version and exit
 
@@ -96,6 +98,27 @@ known_types() {
 	echo "${list:-(none)}"
 }
 
+# Print each type and the first line of its description, sorted by type,
+# with the descriptions lined up.
+list_types() {
+	local dir type description
+	for dir in "$TYPES_DIR"/*/; do
+		[ -d "$dir" ] || continue
+		dir=${dir%/}
+		type=${dir##*/}
+		description=""
+		if [ -f "$dir/description" ]; then
+			description=$(sed -n 1p "$dir/description")
+		fi
+		printf '%s\t%s\n' "$type" "${description:-(no description)}"
+	done | LC_ALL=C sort | awk -F '\t' '
+		{ type[NR] = $1; text[NR] = $2; if (length($1) > width) width = length($1) }
+		END { for (i = 1; i <= NR; i++) printf "%-" width "s  %s\n", type[i], text[i] }'
+	if [ "$(known_types)" = "(none)" ]; then
+		echo "repo-kickoff: no types in $TYPES_DIR" >&2
+	fi
+}
+
 # Replace {{NAME}} with $NAME in standard input. NAME is escaped for sed.
 substitute() {
 	local escaped
@@ -140,6 +163,10 @@ main() {
 			;;
 		--version)
 			echo "repo-kickoff $REPO_KICKOFF_VERSION"
+			return 0
+			;;
+		--list)
+			list_types
 			return 0
 			;;
 		--)
