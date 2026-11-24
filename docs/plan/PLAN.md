@@ -121,9 +121,9 @@ Done when:
 ### T-007: Add --list
 Depends on: T-004
 Done when:
-- [ ] `repo-kickoff --list` prints each type and its description, sorted by type
-- [ ] A type folder with no description is listed with `(no description)`
-- [ ] Unit tests use a fixture catalog
+- [x] `repo-kickoff --list` prints each type and its description, sorted by type
+- [x] A type folder with no description is listed with `(no description)`
+- [x] Unit tests use a fixture catalog
 
 ### T-008: Prompt for missing type and name
 Depends on: T-006, T-007
