@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-24
+
+### Added
+
+- Add the swappable AI command and --teach (#29)
+- Teach an unknown type, then generate from it (#30)
+- Add the python-cli type, taught by Claude (#32)
+
 ## [0.1.0] - 2026-11-24
 
 ### Added
@@ -19,4 +27,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prompt for a missing type and name (#24)
 - Add --check-type to check a type is complete (#25)
 
+[0.2.0]: https://github.com/rmdesmond/repo-kickoff/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rmdesmond/repo-kickoff/releases/tag/v0.1.0
