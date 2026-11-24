@@ -128,11 +128,11 @@ Done when:
 ### T-008: Prompt for missing type and name
 Depends on: T-006, T-007
 Done when:
-- [ ] At a terminal, a missing type shows a numbered list of types to choose from, and a missing name is asked for
-- [ ] An invalid choice or name is asked for again
-- [ ] Without a terminal, missing arguments are a usage error that exits 2, never a hang
-- [ ] `--interactive` asks even without a terminal, reading answers from stdin
-- [ ] Unit tests pipe answers through `--interactive`, including invalid ones
+- [x] At a terminal, a missing type shows a numbered list of types to choose from, and a missing name is asked for
+- [x] An invalid choice or name is asked for again
+- [x] Without a terminal, missing arguments are a usage error that exits 2, never a hang
+- [x] `--interactive` asks even without a terminal, reading answers from stdin
+- [x] Unit tests pipe answers through `--interactive`, including invalid ones
 
 ### T-009: Add the type checker
 Depends on: T-004
