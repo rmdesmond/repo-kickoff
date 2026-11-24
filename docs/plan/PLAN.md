@@ -89,12 +89,12 @@ Done when:
 ### T-004: Add the bash-cli type
 Depends on: T-003
 Done when:
-- [ ] `types/bash-cli/description` holds a one-line summary
-- [ ] The generated `bin/<name>` prints a placeholder line naming itself to stdout and exits 0, and supports `--help` and `--version`
-- [ ] The template also generates `README.md`, `.gitignore` and `tests/smoke.sh`
-- [ ] The generated `tests/smoke.sh` exits 0 when the command works
-- [ ] Every generated shell file passes `shellcheck`
-- [ ] Unit tests generate a `bash-cli` repo in a temporary folder and run its command and smoke test
+- [x] `types/bash-cli/description` holds a one-line summary
+- [x] The generated `bin/<name>` prints a placeholder line naming itself to stdout and exits 0, and supports `--help` and `--version`
+- [x] The template also generates `README.md`, `.gitignore` and `tests/smoke.sh`
+- [x] The generated `tests/smoke.sh` exits 0 when the command works
+- [x] Every generated shell file passes `shellcheck`
+- [x] Unit tests generate a `bash-cli` repo in a temporary folder and run its command and smoke test
 
 ### T-005: Integration test: symlinked command generates bash-cli
 Depends on: T-004
