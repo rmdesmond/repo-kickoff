@@ -165,10 +165,10 @@ When asked for a type it doesn't know, repo-kickoff has Claude add it to the cat
 ### T-012: Add the swappable AI command
 Depends on: T-009
 Done when:
-- [ ] The AI command comes from `REPO_KICKOFF_AI`; the default runs `claude -p` with `--permission-mode acceptEdits`, `--add-dir` set to the catalog, and a limited tool list
-- [ ] A prompt file describes the type contract (description, template, `{{NAME}}`, `tests/smoke.sh`) and tells the AI to write only `types/<type>/`
-- [ ] If the default is used and `claude` isn't installed, repo-kickoff says so, exits 1 and writes nothing
-- [ ] Unit tests use a fake AI script and check it receives the type name, the catalog folder and the prompt
+- [x] The AI command comes from `REPO_KICKOFF_AI`; the default runs `claude -p` with `--permission-mode acceptEdits`, `--add-dir` set to the catalog, and a limited tool list
+- [x] A prompt file describes the type contract (description, template, `{{NAME}}`, `tests/smoke.sh`) and tells the AI to write only `types/<type>/`
+- [x] If the default is used and `claude` isn't installed, repo-kickoff says so, exits 1 and writes nothing
+- [x] Unit tests use a fake AI script and check it receives the type name, the catalog folder and the prompt
 
 ### T-013: Teach an unknown type
 Depends on: T-012
