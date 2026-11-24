@@ -190,6 +190,6 @@ Done when:
 ### T-015: Teach python-cli with the real Claude
 Depends on: T-013
 Done when:
-- [ ] `repo-kickoff python-cli demo` run by hand on macOS with the real `claude` teaches the `python-cli` type and generates `demo`
-- [ ] The prompt file is adjusted for anything the run showed
-- [ ] The taught `types/python-cli/` is committed and passes `--check-type` in CI
+- [x] `repo-kickoff python-cli demo` run by hand on macOS with the real `claude` teaches the `python-cli` type and generates `demo`
+- [x] The prompt file is adjusted for anything the run showed
+- [x] The taught `types/python-cli/` is committed and passes `--check-type` in CI
