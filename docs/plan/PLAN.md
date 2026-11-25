@@ -341,6 +341,6 @@ Done when:
 ### T-029: Integration test: build, install and use a generated C++ library
 Depends on: T-028
 Done when:
-- [ ] Through the symlink on `PATH`, `repo-kickoff cpp-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
-- [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
-- [ ] Its C++ identifiers use `my_lib`, and no file still holds a `{{` placeholder
+- [x] Through the symlink on `PATH`, `repo-kickoff cpp-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
+- [x] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
+- [x] Its C++ identifiers use `my_lib`, and no file still holds a `{{` placeholder
