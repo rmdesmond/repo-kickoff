@@ -7,7 +7,7 @@
 set -eu
 set -o pipefail
 
-REPO_KICKOFF_VERSION=0.3.0
+REPO_KICKOFF_VERSION=0.4.0
 
 # Print the physical folder holding the file at $1, following any chain of
 # symlinks to it. Portable: no `readlink -f`, which BSD readlink lacks.
