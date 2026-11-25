@@ -1,7 +1,7 @@
 # 0009: c-cli builds with CMake and treats GoogleTest as optional
 
 Date: 2026-11-24
-Status: accepted
+Status: superseded by 0010
 
 ## Context
 

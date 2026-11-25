@@ -1,6 +1,6 @@
 # Plan: repo-kickoff
 
-Status: accepted 2026-11-25
+Status: draft
 
 repo-kickoff creates the starting skeleton of a new repository from a known project type: a bash CLI, a Python CLI, a C CLI, a C++ library, a PDF generator and so on. You run `repo-kickoff` with a type and a name, as arguments or answered at prompts, and it assembles the target repository from reusable components kept in its own catalog, with no AI involved. When asked for a type it doesn't know, it asks Claude (`claude -p`) to add that type to the catalog, checks the result, and then generates the target repository from it the same AI-free way. From then on the type is created without the AI. Taught types are written into your local clone of repo-kickoff, for you to review and commit.
 
@@ -16,6 +16,9 @@ In:
 - requirements passed to the AI when teaching a type (`--hint`)
 - the `python-cli` type using `{{NAME_SNAKE}}` for its package name
 - a `c-cli` type: a C command-line program built with CMake, with GoogleTest unit tests, taught by Claude
+- a `c-lib` type: a C library built with CMake, with GoogleTest unit tests and an installable CMake package, written with Claude
+- a `cpp-cli` type (a C++17 command-line program) and a `cpp-lib` type (a C++17 library with an installable CMake package), both built with CMake, with GoogleTest unit tests, taught by Claude
+- GoogleTest required by the C and C++ types' unit tests, and installed in CI so those tests run there
 - tests for all of the above, including the AI path through a fake AI
 
 Out:
@@ -31,7 +34,7 @@ Out:
 - **Language:** bash, compatible with bash 3.2 (macOS's default) and bash 4 and 5 (Linux). No associative arrays, `${var,,}`, `mapfile` or other bash 4 features.
 - **Tools:** only POSIX tools that behave the same on BSD (macOS) and GNU (Linux): no `sed -i`, no `readlink -f`. No Python, Node or other runtime.
 - **Templates:** plain `{{NAME}}` and `{{NAME_SNAKE}}` placeholders, replaced with `sed`. No template engine (decision 0008).
-- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is optional: `c-cli` uses an installed copy when there is one, and its smoke test runs the gtest tests only then (decision 0009).
+- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is required by the `c-cli`, `c-lib`, `cpp-cli` and `cpp-lib` tests: an installed copy, or a download the developer opts into, and never a download in a smoke test. CI installs it (decision 0010, which supersedes 0009's optional GoogleTest). The C++ types use C++17 (decision 0011).
 - **AI:** `claude` is needed only to teach an unknown type. Known types work without it and without a network.
 - **Lint:** `shellcheck`.
 - **Tests:** a plain bash test runner, `tests/run.sh`, not `bats`. CI runs on Linux; work-issue runs the same commands locally on macOS.
@@ -54,7 +57,7 @@ Test levels: unit (single behaviours of `repo-kickoff`, run against fixture cata
 | lint | yes | `git ls-files -z 'bin/*' '*.sh' \| xargs -0 -r shellcheck` |
 | build | no | bash scripts; nothing to compile |
 | unit | from T-001 | `tests/run.sh unit` |
-| integration | from T-005 | `tests/run.sh integration` |
+| integration | from T-005 | `tests/run.sh integration`; from T-022, `tests/ensure-googletest.sh && tests/run.sh integration` |
 
 Extra stages: none
 
@@ -256,3 +259,88 @@ Depends on: T-020
 Done when:
 - [x] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
 - [x] The built program prints `my-tool: placeholder - nothing implemented yet`
+
+## M6: A C library type, and GoogleTest for both C types
+
+Release: v0.5.0
+
+`repo-kickoff c-lib <name>` gives a C library built with CMake, with GoogleTest unit tests and a CMake package that other projects find with `find_package`, and both C types require GoogleTest for their unit tests, which CI runs.
+
+### T-022: Install GoogleTest for the integration stage
+Depends on: none
+Done when:
+- [ ] `tests/ensure-googletest.sh` exits 0 when GoogleTest is installed; on Linux without it, installs `libgtest-dev` with `apt-get` (through `sudo` when not root); elsewhere it exits 1 naming `brew install googletest`
+- [ ] The `integration` stage's `run` is `tests/ensure-googletest.sh && tests/run.sh integration`, and the pipeline is rendered again
+- [ ] In CI, `c-cli`'s smoke test runs its gtest tests, not the "skipped" path
+- [ ] Unit tests cover the installed, installed-by-apt and not-found paths, with `apt-get` and `sudo` replaced by stubs
+
+### T-023: Add the c-lib type
+Depends on: T-022
+Done when:
+- [ ] `types/c-lib/`, written with Claude and reviewed, has a one-line description and a template: a C11 library built with CMake, static by default and shared with `-DBUILD_SHARED_LIBS=ON`; a public header `include/{{NAME_SNAKE}}.h` with `{{NAME_SNAKE}}_` names and an `extern "C"` block; and a README and `.gitignore`
+- [ ] Its unit tests are GoogleTest (`tests/{{NAME_SNAKE}}_test.cpp`), run by `ctest`; they're built when it's the top-level project, from an installed GoogleTest, or downloaded with `FetchContent` only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off
+- [ ] Used from another project (`add_subdirectory`, `FetchContent`), its tests aren't built, so that project doesn't need GoogleTest or C++
+- [ ] `cmake --install` installs the header, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
+- [ ] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
+- [ ] `repo-kickoff --check-type c-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [ ] The tutorial's catalog listings include `c-lib`
+
+### T-024: Integration test: build, install and use a generated C library
+Depends on: T-023
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff c-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
+- [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
+- [ ] The repository has `include/my_lib.h` and `src/my_lib.c`, and no file still holds a `{{` placeholder
+
+### T-025: Require GoogleTest in the c-cli type
+Depends on: T-022
+Done when:
+- [ ] `c-cli`'s CMake builds the gtest tests by default, from an installed GoogleTest or a `FetchContent` download only when the developer opts in; with neither, or with no C++ compiler, configuring fails with a message saying how to get GoogleTest or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
+- [ ] Its `tests/smoke.sh` always runs the gtest tests with `ctest`, still never downloads, and has no "skipped" path
+- [ ] The template's README, and the tutorial's requirements for `c-cli`, say GoogleTest is required
+- [ ] `tests/integration/c_cli_test.sh` checks that a generated `my-tool` runs its gtest tests with `ctest` and they pass
+- [ ] `repo-kickoff --check-type c-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+
+## M7: C++ types
+
+Release: v0.6.0
+
+`repo-kickoff cpp-cli <name>` gives a C++17 command-line program and `repo-kickoff cpp-lib <name>` a C++17 library with an installable CMake package, both built with CMake and tested with GoogleTest in CI.
+
+### T-026: Teach cpp-cli with the real Claude
+Depends on: T-022
+Done when:
+- [ ] `repo-kickoff --yes --hint "..." cpp-cli demo`, run by hand on macOS with the real `claude`, teaches the `cpp-cli` type: CMake, C++17, a program printing its placeholder line with `--help` and `--version`, its logic in a small library the tests call, and `{{NAME_SNAKE}}` for the namespace and other identifiers
+- [ ] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
+- [ ] Its `tests/smoke.sh` never downloads: it builds and runs the program, and runs the gtest tests with `ctest`
+- [ ] `repo-kickoff --check-type cpp-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [ ] The prompt file is adjusted for anything the run showed
+- [ ] The run's log is saved in `docs/runs/`
+- [ ] The reviewed `types/cpp-cli/` is committed, and the tutorial's catalog listings include it
+
+### T-027: Integration test: build a generated C++ repository
+Depends on: T-026
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff cpp-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
+- [ ] The built program prints `my-tool: placeholder - nothing implemented yet`, and `--version` prints `my-tool 0.1.0`
+- [ ] Its gtest tests run with `ctest` and pass
+- [ ] Its C++ identifiers use `my_tool`, and no file still holds a `{{` placeholder
+
+### T-028: Teach cpp-lib with the real Claude
+Depends on: T-026
+Done when:
+- [ ] `repo-kickoff --yes --hint "..." cpp-lib demo`, run by hand on macOS with the real `claude`, teaches the `cpp-lib` type: CMake, a C++17 library, static by default and shared with `-DBUILD_SHARED_LIBS=ON`, its public header under `include/` with everything in namespace `{{NAME_SNAKE}}`
+- [ ] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`; the tests are built only when it's the top-level project, so a project using it through `add_subdirectory` or `FetchContent` doesn't need GoogleTest
+- [ ] `cmake --install` installs the headers, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
+- [ ] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
+- [ ] `repo-kickoff --check-type cpp-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [ ] The prompt file is adjusted for anything the run showed
+- [ ] The run's log is saved in `docs/runs/`
+- [ ] The reviewed `types/cpp-lib/` is committed, and the tutorial's catalog listings include it
+
+### T-029: Integration test: build, install and use a generated C++ library
+Depends on: T-028
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff cpp-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
+- [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
+- [ ] Its C++ identifiers use `my_lib`, and no file still holds a `{{` placeholder
