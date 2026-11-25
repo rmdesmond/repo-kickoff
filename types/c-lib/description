@@ -1,0 +1,1 @@
+A C library, built with CMake, with GoogleTest unit tests and an installable CMake package
