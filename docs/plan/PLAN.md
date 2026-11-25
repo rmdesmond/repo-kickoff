@@ -254,5 +254,5 @@ Done when:
 ### T-021: Integration test: build a generated C repository
 Depends on: T-020
 Done when:
-- [ ] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
-- [ ] The built program prints `my-tool: placeholder - nothing implemented yet`
+- [x] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
+- [x] The built program prints `my-tool: placeholder - nothing implemented yet`
