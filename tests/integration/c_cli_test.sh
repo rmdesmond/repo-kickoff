@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Integration tests: the c-cli type with a dashed name, through a symlink on
-# PATH, built the way its README says. Needs cmake and a C compiler; uses
-# GoogleTest only if it's installed.
+# PATH, built the way its README says. Needs cmake, a C and C++ compiler, and
+# GoogleTest (tests/ensure-googletest.sh).
 
 # shellcheck source=tests/lib.sh
 . "$TESTS_DIR/lib.sh"
@@ -34,6 +34,9 @@ test_a_generated_c_repository_builds_and_runs() {
 	assert_eq "my-tool: placeholder - nothing implemented yet" "$OUT"
 	run build/my-tool --version
 	assert_eq "my-tool 0.1.0" "$OUT"
+	run sh -c 'cd build && ctest --output-on-failure'
+	assert_status 0
+	assert_contains "$OUT" "100% tests passed" "the gtest tests ran and passed"
 }
 
 test_c_identifiers_use_the_snake_case_name() {
