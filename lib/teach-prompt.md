@@ -26,6 +26,8 @@ The bare bones of a `{{TYPE}}` project, and no more:
 - a placeholder program or library that does nothing real. A command-line program prints one line naming itself, for example `{{NAME}}: placeholder - nothing implemented yet`, and supports `--help` and `--version`.
 - `tests/smoke.sh`, executable, starting with `#!/usr/bin/env bash`. repo-kickoff runs it from the generated repository's root, with no network, on macOS and on Linux. It exits 0 only when the generated project works: it builds or runs the placeholder and checks its output. It must not install anything or download anything. Use only tools that are normally present for this type of project, and fail with a clear message if one is missing.
 
+If part of the project builds only with an optional tool or library (a test framework, say), and it isn't installed here, `--check-type` can't compile that part, so you can't see its mistakes. Keep that code short and plain, avoid names the framework itself uses (inside a GoogleTest `TEST`, a helper called `Run` resolves to `testing::Test::Run`, for example), and say in your reply that it hasn't been built.
+
 Keep shell scripts compatible with bash 3.2 and lint-clean under shellcheck, including before `{{NAME}}` and `{{NAME_SNAKE}}` are replaced (quote them: `cmd="bin/{{NAME}}"`).
 
 ## Nobody can answer questions
