@@ -129,7 +129,16 @@ types/<type>/
     ...                any other files and folders
 ```
 
-When generating, repo-kickoff copies `template/` to `<name>/`, replacing `{{NAME}}` with the repository's name in every file's contents and in file and folder names (`template/bin/{{NAME}}` becomes `greet/bin/greet`). Executable files stay executable. Nothing else in a template is special.
+When generating, repo-kickoff copies `template/` to `<name>/`, replacing two placeholders in every file's contents and in file and folder names:
+
+| Placeholder | Replaced with | For `my-tool` |
+|---|---|---|
+| `{{NAME}}` | the repository's name | `my-tool` |
+| `{{NAME_SNAKE}}` | the name in snake_case: its dashes turned into underscores | `my_tool` |
+
+So `template/bin/{{NAME}}` becomes `my-tool/bin/my-tool`, and `template/src/{{NAME_SNAKE}}/` becomes `my-tool/src/my_tool/`. Use `{{NAME}}` for what people see (the command, the project, the README's title), and `{{NAME_SNAKE}}` where a language needs an identifier, which can't contain a dash: a Python package, a C function prefix ([decision 0008](docs/decisions/0008-name-snake-placeholder.md)). Names start with a letter, so `{{NAME_SNAKE}}` is a valid identifier, unless the name is one of the language's keywords (`class`, say), which repo-kickoff doesn't check.
+
+Executable files stay executable. Nothing else in a template is special.
 
 ### Add a type by hand
 

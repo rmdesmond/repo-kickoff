@@ -85,3 +85,47 @@ test_catalog_can_be_overridden() {
 	run "$KICKOFF" --help
 	assert_contains "$OUT" "Types are read from: $REPO_KICKOFF_TYPES"
 }
+
+# A catalog type "snake" in $TEST_TMP/catalog, whose template uses
+# {{NAME_SNAKE}} as well as {{NAME}}.
+make_snake_type() {
+	local t=catalog/snake/template
+	mkdir -p "$t/src/{{NAME_SNAKE}}" "$t/tests"
+	echo "A type using NAME_SNAKE" >catalog/snake/description
+	printf 'package {{NAME_SNAKE}}\n' >"$t/src/{{NAME_SNAKE}}/{{NAME_SNAKE}}.txt"
+	printf '{{NAME}} imports {{NAME_SNAKE}}; {{NAME_SNAKE}} is {{NAME}}\n' >"$t/both.txt"
+	printf '#!/bin/sh\nexit 0\n' >"$t/tests/smoke.sh"
+	chmod +x "$t/tests/smoke.sh"
+}
+
+test_replaces_the_snake_name_in_file_contents() {
+	make_snake_type
+	REPO_KICKOFF_TYPES=$TEST_TMP/catalog run "$KICKOFF" snake my-cool-tool
+	assert_status 0
+	assert_eq "package my_cool_tool" "$(cat my-cool-tool/src/my_cool_tool/my_cool_tool.txt)"
+}
+
+test_replaces_the_snake_name_in_file_and_folder_names() {
+	make_snake_type
+	REPO_KICKOFF_TYPES=$TEST_TMP/catalog run "$KICKOFF" snake my-tool
+	assert_status 0
+	assert_dir my-tool/src/my_tool
+	assert_file my-tool/src/my_tool/my_tool.txt
+	assert_not_exists "my-tool/src/{{NAME_SNAKE}}"
+	count=$(find my-tool -name '*{{*' | wc -l | tr -d ' ')
+	assert_eq 0 "$count" "paths still holding a placeholder"
+}
+
+test_snake_name_of_a_name_without_dashes_is_the_name() {
+	make_snake_type
+	REPO_KICKOFF_TYPES=$TEST_TMP/catalog run "$KICKOFF" snake greet2
+	assert_status 0
+	assert_eq "package greet2" "$(cat greet2/src/greet2/greet2.txt)"
+}
+
+test_replaces_both_placeholders_in_one_file() {
+	make_snake_type
+	REPO_KICKOFF_TYPES=$TEST_TMP/catalog run "$KICKOFF" snake my-tool
+	assert_status 0
+	assert_eq "my-tool imports my_tool; my_tool is my-tool" "$(cat my-tool/both.txt)"
+}

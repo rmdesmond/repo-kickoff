@@ -209,10 +209,10 @@ Types can use `{{NAME_SNAKE}}` wherever a language needs an identifier, and `pyt
 ### T-016: Add the {{NAME_SNAKE}} placeholder
 Depends on: none
 Done when:
-- [ ] The generator replaces `{{NAME_SNAKE}}` with the name, dashes turned into underscores, in file contents and in file and folder names, alongside `{{NAME}}`
-- [ ] The README's catalog section describes it
-- [ ] `lib/teach-prompt.md` describes it, in place of the advice to use a fixed identifier
-- [ ] Unit tests cover contents, file and folder names, a name with no dashes, and both placeholders in one file
+- [x] The generator replaces `{{NAME_SNAKE}}` with the name, dashes turned into underscores, in file contents and in file and folder names, alongside `{{NAME}}`
+- [x] The README's catalog section describes it
+- [x] `lib/teach-prompt.md` describes it, in place of the advice to use a fixed identifier
+- [x] Unit tests cover contents, file and folder names, a name with no dashes, and both placeholders in one file
 
 ### T-017: Use {{NAME_SNAKE}} in the python-cli type
 Depends on: T-016

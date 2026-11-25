@@ -16,7 +16,7 @@ Don't create, change or delete anything outside it.
         tests/smoke.sh     required, executable: exits 0 when the generated repository works
         ...                every other file the bare-bones project needs
 
-When repo-kickoff generates a repository named `<name>` from the type, it copies `template/` to `<name>/` and replaces every `{{NAME}}` with the name, in file contents and in file and folder names: `template/bin/{{NAME}}` becomes `greet/bin/greet`. Names are lower-case letters, digits and dashes, starting with a letter, so a name like `my-tool` can appear where the language needs something else (a Python package name can't contain `-`, for example): write the template so it works with dashed names. Where the language needs an identifier that a dashed name can't be, use a fixed, specific identifier instead of `{{NAME}}`, and say in the template's README what it is and how to rename it. Executable files stay executable. Nothing else in a template is special: there are no other placeholders, no loops and no conditions.
+When repo-kickoff generates a repository named `<name>` from the type, it copies `template/` to `<name>/` and replaces every `{{NAME}}` with the name, in file contents and in file and folder names: `template/bin/{{NAME}}` becomes `greet/bin/greet`. Names are lower-case letters, digits and dashes, starting with a letter, so they can be dashed, like `my-tool`: write the template so it works with dashed names. Where the language needs an identifier, which can't contain a dash (a Python package, a C function or macro prefix, a crate or module name), use `{{NAME_SNAKE}}`: the name in snake_case, its dashes turned into underscores (`my-tool` becomes `my_tool`). It's replaced in file contents and in file and folder names too: `template/src/{{NAME_SNAKE}}/` becomes `my-tool/src/my_tool/`. Use `{{NAME}}` for what people see (the command, the project name, the README's title) and `{{NAME_SNAKE}}` for identifiers, never a fixed identifier such as `app`. Executable files stay executable. Nothing else in a template is special: there are no other placeholders, no loops and no conditions.
 
 ## What the template must contain
 
@@ -26,7 +26,7 @@ The bare bones of a `{{TYPE}}` project, and no more:
 - a placeholder program or library that does nothing real. A command-line program prints one line naming itself, for example `{{NAME}}: placeholder - nothing implemented yet`, and supports `--help` and `--version`.
 - `tests/smoke.sh`, executable, starting with `#!/usr/bin/env bash`. repo-kickoff runs it from the generated repository's root, with no network, on macOS and on Linux. It exits 0 only when the generated project works: it builds or runs the placeholder and checks its output. It must not install anything or download anything. Use only tools that are normally present for this type of project, and fail with a clear message if one is missing.
 
-Keep shell scripts compatible with bash 3.2 and lint-clean under shellcheck, including before `{{NAME}}` is replaced (quote it: `cmd="bin/{{NAME}}"`).
+Keep shell scripts compatible with bash 3.2 and lint-clean under shellcheck, including before `{{NAME}}` and `{{NAME_SNAKE}}` are replaced (quote them: `cmd="bin/{{NAME}}"`).
 
 ## Nobody can answer questions
 

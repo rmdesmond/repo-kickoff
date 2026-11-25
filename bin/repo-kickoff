@@ -355,15 +355,18 @@ ask_name() {
 	done
 }
 
-# Replace {{NAME}} with $NAME in standard input. NAME is escaped for sed.
+# Replace {{NAME}} with $NAME, and {{NAME_SNAKE}} with $NAME in snake_case
+# (its dashes turned into underscores: my-tool -> my_tool), in standard input.
 substitute() {
-	local escaped
-	escaped=$(printf '%s' "$NAME" | sed 's/[\/&]/\\&/g')
-	LC_ALL=C sed "s/{{NAME}}/$escaped/g"
+	local name snake
+	name=$(sed_escape "$NAME")
+	snake=$(sed_escape "$(printf '%s' "$NAME" | tr - _)")
+	LC_ALL=C sed -e "s/{{NAME}}/$name/g" -e "s/{{NAME_SNAKE}}/$snake/g"
 }
 
 # generate TYPE DEST: copy the type's template to DEST, replacing {{NAME}}
-# in file contents and in file and folder names, and keeping executable bits.
+# and {{NAME_SNAKE}} in file contents and in file and folder names, and
+# keeping executable bits.
 generate() {
 	local template=$TYPES_DIR/$1/template dest=$2 path out
 	mkdir "$dest"
