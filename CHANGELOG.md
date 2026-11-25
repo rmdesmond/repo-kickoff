@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-25
+
+### Added
+
+- Add the c-lib type (#66)
+- Require GoogleTest in the c-cli type (#68)
+
 ## [0.4.0] - 2026-11-25
 
 ### Added
@@ -44,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prompt for a missing type and name (#24)
 - Add --check-type to check a type is complete (#25)
 
+[0.5.0]: https://github.com/rmdesmond/repo-kickoff/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/rmdesmond/repo-kickoff/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/rmdesmond/repo-kickoff/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/rmdesmond/repo-kickoff/compare/v0.1.0...v0.2.0
