@@ -2,8 +2,8 @@ import contextlib
 import io
 import unittest
 
-from app import __version__
-from app.cli import main
+from {{NAME_SNAKE}} import __version__
+from {{NAME_SNAKE}}.cli import main
 
 
 class CliTest(unittest.TestCase):

@@ -23,15 +23,14 @@ pip install -e .
 Without installing, from the repository root:
 
 ```sh
-PYTHONPATH=src python3 -m app
+PYTHONPATH=src python3 -m {{NAME_SNAKE}}
 ```
 
 ## Layout
 
-- `src/app/` - the Python package (`cli.py` holds the entry point). The
-  command is named `{{NAME}}`; the package has a fixed name because Python
-  package names can't contain dashes. Rename it if you like, and update
-  `pyproject.toml` and the tests to match.
+- `src/{{NAME_SNAKE}}/` - the Python package (`cli.py` holds the entry point).
+  The command is named `{{NAME}}`, and the package `{{NAME_SNAKE}}`, since
+  Python package names use underscores where the command has dashes.
 - `tests/` - unit tests and the smoke test
 
 ## Tests

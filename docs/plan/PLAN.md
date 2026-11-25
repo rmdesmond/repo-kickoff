@@ -217,9 +217,9 @@ Done when:
 ### T-017: Use {{NAME_SNAKE}} in the python-cli type
 Depends on: T-016
 Done when:
-- [ ] The package is `src/{{NAME_SNAKE}}/`, and no `app` package remains
-- [ ] `pyproject.toml`, `__main__.py`, the unit tests, `tests/smoke.sh` (`python3 -m {{NAME_SNAKE}}`) and the template's README use it, and the README's paragraph on renaming the package is gone
-- [ ] `repo-kickoff --check-type python-cli` passes, and the template's shell files pass shellcheck
+- [x] The package is `src/{{NAME_SNAKE}}/`, and no `app` package remains
+- [x] `pyproject.toml`, `__main__.py`, the unit tests, `tests/smoke.sh` (`python3 -m {{NAME_SNAKE}}`) and the template's README use it, and the README's paragraph on renaming the package is gone
+- [x] `repo-kickoff --check-type python-cli` passes, and the template's shell files pass shellcheck
 
 ### T-018: Integration test: a dashed Python name
 Depends on: T-017
