@@ -1,0 +1,50 @@
+$ repo-kickoff --yes --hint "$(cat hint.txt)" cpp-cli demo-cpp-cli
+
+hint.txt:
+    A C++ command-line program (C++17), built with CMake (3.14 or later), with unit tests in GoogleTest.
+    - Layout: put the program's logic in a small static library inside the project, with its public header under include/{{NAME_SNAKE}}/, and keep src/main.cpp thin, so the GoogleTest tests call the logic directly. Put everything in namespace {{NAME_SNAKE}}. Use {{NAME_SNAKE}} for C++ identifiers, the namespace, header and source names and include guards, and {{NAME}} for the executable and the CMake project.
+    - The program prints "{{NAME}}: placeholder - nothing implemented yet", supports --help and --version (printing "{{NAME}} 0.1.0", from the CMake project version), and an unknown option prints the usage to stderr and exits with status 2.
+    - GoogleTest is required for the tests: a CMake option {{NAME_SNAKE}}_BUILD_TESTS, on by default. When it's on, use an installed GoogleTest from find_package(GTest), or download GoogleTest 1.15.2 with FetchContent (URL https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz, URL_HASH SHA256=7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926) only when the developer opts in with {{NAME_SNAKE}}_FETCH_GOOGLETEST, off by default. With neither, configuring fails with a message saying how to install GoogleTest, opt in to the download, or turn the tests off with -D{{NAME_SNAKE}}_BUILD_TESTS=OFF. Register the tests with gtest_discover_tests.
+    - tests/smoke.sh: configure and build in a temporary build folder (never in the source tree) with -D{{NAME_SNAKE}}_FETCH_GOOGLETEST=OFF and -DFETCHCONTENT_FULLY_DISCONNECTED=ON, run the program, check its placeholder line, --help, --version and that an unknown option fails, and always run ctest. Never download anything. Work with Apple clang on macOS and with gcc on Linux.
+    - Warnings (-Wall -Wextra -pedantic) on for gcc and clang, without failing the build.
+    - README: building, running, testing, how to get GoogleTest (Homebrew, apt, or the opt-in download), and the choices made.
+    GoogleTest is installed here, so --check-type builds and runs the tests.
+
+started 2026-11-25T16:23:39Z
+repo-kickoff: asking the AI command to add the cpp-cli type: /Users/randall/Desktop/engineering/software/repos/repo-kickoff/lib/ai-claude.sh
+I've added the `cpp-cli` type, and the check passes: `--check-type cpp-cli` prints `ok:`. The smoke test also passes shellcheck. GoogleTest is installed here, so that run built the unit tests and ran them through ctest. Nothing is left unbuilt.
+
+Files in `types/cpp-cli/`:
+
+- **`description`**: "A command-line program in C++17, built with CMake, with GoogleTest unit tests".
+- **`template/CMakeLists.txt`**:
+  - requires CMake 3.14, and `project({{NAME}} VERSION 0.1.0)` supplies the version the program prints
+  - the program's logic is a static library, `{{NAME_SNAKE}}_lib`, and the `{{NAME}}` program is a thin wrapper around it
+  - `-Wall -Wextra -pedantic` are on for gcc and clang, but warnings don't fail the build
+  - the two options are `{{NAME_SNAKE}}_BUILD_TESTS` (on by default) and `{{NAME_SNAKE}}_FETCH_GOOGLETEST` (off by default)
+  - an installed GoogleTest is used first; the 1.15.2 download (with the URL and SHA-256 you gave) happens only when the developer opts in
+  - with neither, configuring stops with a message giving the three ways out; tests are registered with `gtest_discover_tests`
+- **`template/include/{{NAME_SNAKE}}/{{NAME_SNAKE}}.hpp`** and **`template/src/{{NAME_SNAKE}}.cpp`**: three functions in `namespace {{NAME_SNAKE}}`: `version()`, `usage(out)` and `run(args, out, err)`. `run` writes to the streams it is given, so the tests can capture output with string streams.
+- **`template/src/main.cpp`**: a thin `main()` that passes the arguments to `{{NAME_SNAKE}}::run`.
+- **`template/tests/{{NAME_SNAKE}}_test.cpp`**: GoogleTest tests of the placeholder line, `--help` and `-h`, `--version`, an unknown option (exits 2 with the usage on stderr), an unexpected argument, and a non-empty version. The helper is called `RunProgram`, not `Run`.
+- **`template/tests/smoke.sh`** (executable):
+  - configures and builds in a temporary folder, with the download off and `FETCHCONTENT_FULLY_DISCONNECTED=ON`
+  - checks the placeholder line, `--help` and `--version`, and that an unknown option exits 2 with the usage on stderr
+  - always runs ctest, and fails with a clear message if cmake or ctest is missing
+- **`template/README.md`**: layout, requirements, building, running, testing, how to get GoogleTest (Homebrew, apt or the download), and the choices made.
+- **`template/.gitignore`**: the same as the `c-cli` type's.
+
+Choices of mine you might not expect:
+
+- **Version check:** the smoke test accepts any `{{NAME}} X.Y.Z` rather than exactly `0.1.0`, so raising the project version doesn't break it.
+- **Extra arguments:** any argument that isn't an option (not just unknown options) also prints the usage and exits 2.
+- **Include guard:** it is `{{NAME_SNAKE}}_{{NAME_SNAKE}}_HPP`, because the header sits at `{{NAME_SNAKE}}/{{NAME_SNAKE}}.hpp`.
+
+None of your requirements conflicted with the rules.
+repo-kickoff: checking the new cpp-cli type
+ok: cpp-cli has a description and a template, and its smoke test passes
+Added the cpp-cli type to /Users/randall/Desktop/engineering/software/repos/repo-kickoff/types/cpp-cli.
+Review it, then commit it to keep it: git -C /Users/randall/Desktop/engineering/software/repos/repo-kickoff add types/cpp-cli
+Created demo-cpp-cli from the cpp-cli type.
+exit 0
+ended 2026-11-25T16:25:15Z

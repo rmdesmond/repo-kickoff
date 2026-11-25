@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Smoke test for {{NAME}}: configures and builds the project in a temporary
+# build folder, checks the program's placeholder line, --help, --version and
+# that an unknown option fails, and runs the GoogleTest unit tests with ctest.
+# It never downloads anything, so GoogleTest must be installed. Run from
+# anywhere: tests/smoke.sh
+
+set -eu
+
+cd "$(dirname "$0")/.."
+
+fail() {
+	echo "smoke: FAIL: $*" >&2
+	exit 1
+}
+
+command -v cmake >/dev/null 2>&1 ||
+	fail "cmake not found: install CMake 3.14 or later (brew install cmake, or apt install cmake)"
+command -v ctest >/dev/null 2>&1 ||
+	fail "ctest not found: it comes with CMake; check your CMake installation"
+
+build=$(mktemp -d "${TMPDIR:-/tmp}/{{NAME}}-smoke.XXXXXX") ||
+	fail "could not create a temporary build folder"
+trap 'rm -rf "$build"' EXIT
+
+echo "smoke: configuring in $build"
+cmake -S . -B "$build" \
+	-DCMAKE_BUILD_TYPE=Debug \
+	"-D{{NAME_SNAKE}}_FETCH_GOOGLETEST=OFF" \
+	-DFETCHCONTENT_FULLY_DISCONNECTED=ON >"$build/configure.log" 2>&1 || {
+	cat "$build/configure.log" >&2
+	fail "cmake configure failed (are a C++17 compiler and GoogleTest installed?)"
+}
+
+echo "smoke: building"
+cmake --build "$build" >"$build/build.log" 2>&1 || {
+	cat "$build/build.log" >&2
+	fail "build failed"
+}
+
+cmd="$build/{{NAME}}"
+[ -x "$cmd" ] || fail "the build did not produce $cmd"
+
+out=$("$cmd") || fail "{{NAME}} exited non-zero"
+[ "$out" = "{{NAME}}: placeholder - nothing implemented yet" ] ||
+	fail "unexpected output: $out"
+
+help=$("$cmd" --help) || fail "--help exited non-zero"
+case $help in
+"Usage: {{NAME}}"*) ;;
+*) fail "unexpected --help output: $help" ;;
+esac
+
+version=$("$cmd" --version) || fail "--version exited non-zero"
+case $version in
+"{{NAME}} "[0-9]*.[0-9]*.[0-9]*) ;;
+*) fail "unexpected --version output: $version" ;;
+esac
+
+status=0
+err=$("$cmd" --no-such-option 2>&1 >/dev/null) || status=$?
+[ "$status" -eq 2 ] || fail "an unknown option should exit with status 2, not $status"
+case $err in
+*"Usage: {{NAME}}"*) ;;
+*) fail "an unknown option should print the usage to stderr, got: $err" ;;
+esac
+
+echo "smoke: running unit tests"
+(cd "$build" && ctest --output-on-failure) || fail "unit tests failed"
+
+echo "smoke: ok"

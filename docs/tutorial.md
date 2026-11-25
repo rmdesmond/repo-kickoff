@@ -27,6 +27,7 @@ $ repo-kickoff --list
 bash-cli    A command-line tool written as a single bash script
 c-cli       A command-line program in C11, built with CMake, with GoogleTest unit tests
 c-lib       A C library, built with CMake, with GoogleTest unit tests and an installable CMake package
+cpp-cli     A command-line program in C++17, built with CMake, with GoogleTest unit tests
 python-cli  A command-line tool written in Python, packaged with pyproject.toml
 ```
 
@@ -240,7 +241,8 @@ Known types:
   1) bash-cli    A command-line tool written as a single bash script
   2) c-cli       A command-line program in C11, built with CMake, with GoogleTest unit tests
   3) c-lib       A C library, built with CMake, with GoogleTest unit tests and an installable CMake package
-  4) python-cli  A command-line tool written in Python, packaged with pyproject.toml
+  4) cpp-cli     A command-line program in C++17, built with CMake, with GoogleTest unit tests
+  5) python-cli  A command-line tool written in Python, packaged with pyproject.toml
 Type (number or name): Name of the new repository: Created notes-tool from the bash-cli type.
 ```
 
@@ -253,6 +255,8 @@ $ repo-kickoff --check-type c-cli
 ok: c-cli has a description and a template, and its smoke test passes
 $ repo-kickoff --check-type c-lib
 ok: c-lib has a description and a template, and its smoke test passes
+$ repo-kickoff --check-type cpp-cli
+ok: cpp-cli has a description and a template, and its smoke test passes
 ```
 
 ## When something goes wrong
@@ -279,7 +283,7 @@ repo-kickoff: greet already exists
 ```console
 $ repo-kickoff rust-cli fast-tool </dev/null
 repo-kickoff: unknown type: rust-cli
-repo-kickoff: known types: bash-cli, c-cli, c-lib, python-cli
+repo-kickoff: known types: bash-cli, c-cli, c-lib, cpp-cli, python-cli
 repo-kickoff: to have the AI command add it, run again with --yes (or at a terminal)
 ```
 
