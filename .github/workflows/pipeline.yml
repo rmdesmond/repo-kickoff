@@ -54,4 +54,4 @@ jobs:
       - name: integration
         shell: bash
         run: |
-          tests/run.sh integration
+          tests/ensure-googletest.sh && tests/run.sh integration

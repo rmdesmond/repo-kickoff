@@ -27,5 +27,5 @@ pipeline:
       run: "tests/run.sh unit"
     integration:
       enabled: true
-      run: "tests/run.sh integration"
+      run: "tests/ensure-googletest.sh && tests/run.sh integration"
   extra_stages: []
