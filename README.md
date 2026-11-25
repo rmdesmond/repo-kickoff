@@ -184,9 +184,11 @@ Then commit `types/notes/`. The integration tests check that every type in the c
 
 ```sh
 tests/run.sh unit          # unit tests
-tests/run.sh integration   # integration tests
+tests/ensure-googletest.sh && tests/run.sh integration   # integration tests
 git ls-files -z 'bin/*' '*.sh' | xargs -0 -r shellcheck   # lint
 ```
+
+The integration tests build the C types' GoogleTest tests, so they need cmake, a C and C++ compiler, and GoogleTest. `tests/ensure-googletest.sh` checks for GoogleTest: on Linux it installs `libgtest-dev` with `apt-get` if it's missing, and elsewhere it says how to install it (`brew install googletest` on macOS).
 
 The pipeline runs the same commands (`.project/config.yml`). Work follows [the plan](docs/plan/PLAN.md), and choices are recorded in [docs/decisions](docs/decisions/).
 

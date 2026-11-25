@@ -269,10 +269,10 @@ Release: v0.5.0
 ### T-022: Install GoogleTest for the integration stage
 Depends on: none
 Done when:
-- [ ] `tests/ensure-googletest.sh` exits 0 when GoogleTest is installed; on Linux without it, installs `libgtest-dev` with `apt-get` (through `sudo` when not root); elsewhere it exits 1 naming `brew install googletest`
-- [ ] The `integration` stage's `run` is `tests/ensure-googletest.sh && tests/run.sh integration`, and the pipeline is rendered again
-- [ ] In CI, `c-cli`'s smoke test runs its gtest tests, not the "skipped" path
-- [ ] Unit tests cover the installed, installed-by-apt and not-found paths, with `apt-get` and `sudo` replaced by stubs
+- [x] `tests/ensure-googletest.sh` exits 0 when GoogleTest is installed; on Linux without it, installs `libgtest-dev` with `apt-get` (through `sudo` when not root); elsewhere it exits 1 naming `brew install googletest`
+- [x] The `integration` stage's `run` is `tests/ensure-googletest.sh && tests/run.sh integration`, and the pipeline is rendered again
+- [x] In CI, `c-cli`'s smoke test runs its gtest tests, not the "skipped" path
+- [x] Unit tests cover the installed, installed-by-apt and not-found paths, with `apt-get` and `sudo` replaced by stubs
 
 ### T-023: Add the c-lib type
 Depends on: T-022

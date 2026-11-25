@@ -46,3 +46,15 @@ test_c_identifiers_use_the_snake_case_name() {
 	count=$(grep -rl '{{' my-tool | wc -l | tr -d ' ')
 	assert_eq 0 "$count" "files still holding a placeholder"
 }
+
+test_with_googletest_installed_the_smoke_test_runs_the_unit_tests() {
+	install_on_path
+	"$REPO_ROOT/tests/ensure-googletest.sh" >/dev/null ||
+		_fail "GoogleTest is needed for this test: run tests/ensure-googletest.sh"
+	run repo-kickoff c-cli my-tool
+	assert_status 0
+	run my-tool/tests/smoke.sh
+	assert_status 0
+	assert_contains "$OUT" "smoke: running unit tests"
+	assert_not_contains "$OUT" "unit tests skipped"
+}
