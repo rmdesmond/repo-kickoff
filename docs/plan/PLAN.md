@@ -321,10 +321,10 @@ Done when:
 ### T-027: Integration test: build a generated C++ repository
 Depends on: T-026
 Done when:
-- [ ] Through the symlink on `PATH`, `repo-kickoff cpp-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
-- [ ] The built program prints `my-tool: placeholder - nothing implemented yet`, and `--version` prints `my-tool 0.1.0`
-- [ ] Its gtest tests run with `ctest` and pass
-- [ ] Its C++ identifiers use `my_tool`, and no file still holds a `{{` placeholder
+- [x] Through the symlink on `PATH`, `repo-kickoff cpp-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
+- [x] The built program prints `my-tool: placeholder - nothing implemented yet`, and `--version` prints `my-tool 0.1.0`
+- [x] Its gtest tests run with `ctest` and pass
+- [x] Its C++ identifiers use `my_tool`, and no file still holds a `{{` placeholder
 
 ### T-028: Teach cpp-lib with the real Claude
 Depends on: T-026
