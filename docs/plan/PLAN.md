@@ -329,14 +329,14 @@ Done when:
 ### T-028: Teach cpp-lib with the real Claude
 Depends on: T-026
 Done when:
-- [ ] `repo-kickoff --yes --hint "..." cpp-lib demo`, run by hand on macOS with the real `claude`, teaches the `cpp-lib` type: CMake, a C++17 library, static by default and shared with `-DBUILD_SHARED_LIBS=ON`, its public header under `include/` with everything in namespace `{{NAME_SNAKE}}`
-- [ ] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`; the tests are built only when it's the top-level project, so a project using it through `add_subdirectory` or `FetchContent` doesn't need GoogleTest
-- [ ] `cmake --install` installs the headers, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
-- [ ] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
-- [ ] `repo-kickoff --check-type cpp-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
-- [ ] The prompt file is adjusted for anything the run showed
-- [ ] The run's log is saved in `docs/runs/`
-- [ ] The reviewed `types/cpp-lib/` is committed, and the tutorial's catalog listings include it
+- [x] `repo-kickoff --yes --hint "..." cpp-lib demo`, run by hand on macOS with the real `claude`, teaches the `cpp-lib` type: CMake, a C++17 library, static by default and shared with `-DBUILD_SHARED_LIBS=ON`, its public header under `include/` with everything in namespace `{{NAME_SNAKE}}`
+- [x] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`; the tests are built only when it's the top-level project, so a project using it through `add_subdirectory` or `FetchContent` doesn't need GoogleTest
+- [x] `cmake --install` installs the headers, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
+- [x] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
+- [x] `repo-kickoff --check-type cpp-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [x] The prompt file is adjusted for anything the run showed
+- [x] The run's log is saved in `docs/runs/`
+- [x] The reviewed `types/cpp-lib/` is committed, and the tutorial's catalog listings include it
 
 ### T-029: Integration test: build, install and use a generated C++ library
 Depends on: T-028
