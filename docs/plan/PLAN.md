@@ -310,13 +310,13 @@ Release: v0.6.0
 ### T-026: Teach cpp-cli with the real Claude
 Depends on: T-022
 Done when:
-- [ ] `repo-kickoff --yes --hint "..." cpp-cli demo`, run by hand on macOS with the real `claude`, teaches the `cpp-cli` type: CMake, C++17, a program printing its placeholder line with `--help` and `--version`, its logic in a small library the tests call, and `{{NAME_SNAKE}}` for the namespace and other identifiers
-- [ ] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
-- [ ] Its `tests/smoke.sh` never downloads: it builds and runs the program, and runs the gtest tests with `ctest`
-- [ ] `repo-kickoff --check-type cpp-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
-- [ ] The prompt file is adjusted for anything the run showed
-- [ ] The run's log is saved in `docs/runs/`
-- [ ] The reviewed `types/cpp-cli/` is committed, and the tutorial's catalog listings include it
+- [x] `repo-kickoff --yes --hint "..." cpp-cli demo`, run by hand on macOS with the real `claude`, teaches the `cpp-cli` type: CMake, C++17, a program printing its placeholder line with `--help` and `--version`, its logic in a small library the tests call, and `{{NAME_SNAKE}}` for the namespace and other identifiers
+- [x] GoogleTest is required to build the tests: an installed copy, or a `FetchContent` download only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
+- [x] Its `tests/smoke.sh` never downloads: it builds and runs the program, and runs the gtest tests with `ctest`
+- [x] `repo-kickoff --check-type cpp-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [x] The prompt file is adjusted for anything the run showed
+- [x] The run's log is saved in `docs/runs/`
+- [x] The reviewed `types/cpp-cli/` is committed, and the tutorial's catalog listings include it
 
 ### T-027: Integration test: build a generated C++ repository
 Depends on: T-026
