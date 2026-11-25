@@ -17,7 +17,7 @@ In:
 - the `python-cli` type using `{{NAME_SNAKE}}` for its package name
 - a `c-cli` type: a C command-line program built with CMake, with GoogleTest unit tests, taught by Claude
 - a `c-lib` type: a C library built with CMake, with GoogleTest unit tests and an installable CMake package, written with Claude
-- GoogleTest installed in CI, so the C types' gtest tests run there
+- GoogleTest required by both C types' unit tests, and installed in CI so those tests run there
 - tests for all of the above, including the AI path through a fake AI
 
 Out:
@@ -33,7 +33,7 @@ Out:
 - **Language:** bash, compatible with bash 3.2 (macOS's default) and bash 4 and 5 (Linux). No associative arrays, `${var,,}`, `mapfile` or other bash 4 features.
 - **Tools:** only POSIX tools that behave the same on BSD (macOS) and GNU (Linux): no `sed -i`, no `readlink -f`. No Python, Node or other runtime.
 - **Templates:** plain `{{NAME}}` and `{{NAME_SNAKE}}` placeholders, replaced with `sed`. No template engine (decision 0008).
-- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is optional for `c-cli`: it uses an installed copy when there is one, and its smoke test runs the gtest tests only then (decision 0009). `c-lib` requires it for its tests, and CI installs it (decision 0010).
+- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is required by the `c-cli` and `c-lib` tests: an installed copy, or a download the developer opts into, and never a download in a smoke test. CI installs it (decision 0010, which supersedes 0009's optional GoogleTest).
 - **AI:** `claude` is needed only to teach an unknown type. Known types work without it and without a network.
 - **Lint:** `shellcheck`.
 - **Tests:** a plain bash test runner, `tests/run.sh`, not `bats`. CI runs on Linux; work-issue runs the same commands locally on macOS.
@@ -259,11 +259,11 @@ Done when:
 - [x] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
 - [x] The built program prints `my-tool: placeholder - nothing implemented yet`
 
-## M6: A C library type
+## M6: A C library type, and GoogleTest for both C types
 
 Release: v0.5.0
 
-`repo-kickoff c-lib <name>` gives a C library built with CMake, with GoogleTest unit tests and a CMake package that other projects find with `find_package`, and CI runs the C types' gtest tests.
+`repo-kickoff c-lib <name>` gives a C library built with CMake, with GoogleTest unit tests and a CMake package that other projects find with `find_package`, and both C types require GoogleTest for their unit tests, which CI runs.
 
 ### T-022: Install GoogleTest for the integration stage
 Depends on: none
@@ -290,3 +290,12 @@ Done when:
 - [ ] Through the symlink on `PATH`, `repo-kickoff c-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
 - [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
 - [ ] The repository has `include/my_lib.h` and `src/my_lib.c`, and no file still holds a `{{` placeholder
+
+### T-025: Require GoogleTest in the c-cli type
+Depends on: T-022
+Done when:
+- [ ] `c-cli`'s CMake builds the gtest tests by default, from an installed GoogleTest or a `FetchContent` download only when the developer opts in; with neither, or with no C++ compiler, configuring fails with a message saying how to get GoogleTest or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
+- [ ] Its `tests/smoke.sh` always runs the gtest tests with `ctest`, still never downloads, and has no "skipped" path
+- [ ] The template's README, and the tutorial's requirements for `c-cli`, say GoogleTest is required
+- [ ] `tests/integration/c_cli_test.sh` checks that a generated `my-tool` runs its gtest tests with `ctest` and they pass
+- [ ] `repo-kickoff --check-type c-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
