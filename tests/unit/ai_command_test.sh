@@ -43,6 +43,7 @@ test_the_prompt_describes_the_type_contract() {
 	assert_contains "$prompt" "tests/smoke.sh     required, executable"
 	assert_contains "$prompt" "replaces every \`{{NAME}}\` with the name"
 	assert_contains "$prompt" "$REPO_ROOT/bin/repo-kickoff --check-type python-cli"
+	assert_contains "$prompt" "say in your reply which requirements weren't checked"
 	assert_not_contains "$prompt" "{{TYPE}}"
 	assert_not_contains "$prompt" "{{TYPE_DIR}}"
 	assert_not_contains "$prompt" "{{KICKOFF}}"
