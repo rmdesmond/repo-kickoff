@@ -17,7 +17,7 @@ ln -s "$PWD/repo-kickoff/bin/repo-kickoff" ~/.local/bin/repo-kickoff   # any fol
 
 ```console
 $ repo-kickoff --version
-repo-kickoff 0.3.0
+repo-kickoff 0.4.0
 ```
 
 To update, `git pull` in the clone.
