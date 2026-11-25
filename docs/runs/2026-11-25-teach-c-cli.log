@@ -1,0 +1,43 @@
+$ repo-kickoff --yes --hint "$(cat hint.txt)" c-cli demo
+
+hint.txt:
+    A C command-line program (C11), built with CMake (3.14 or later), with unit tests in GoogleTest (C++).
+    - Layout: put the program's logic in a small C library inside the project, and keep main.c thin, so the GoogleTest tests can call the C functions directly (with extern "C" where needed). Use {{NAME_SNAKE}} for C identifiers, such as function prefixes, header names and include guards, and {{NAME}} for the executable and the CMake project.
+    - GoogleTest: when find_package(GTest) finds an installed copy, build the tests and register them with CTest. Download it with FetchContent only when the developer opts in, with a CMake option that is off by default. With neither, configure and build the program anyway and skip the tests, with a message.
+    - tests/smoke.sh: configure and build in a temporary build folder (never in the source tree), run the program, and check its placeholder line, --help and --version. Run ctest only when GoogleTest was found, and say when the tests were skipped. Never download anything. Work with Apple clang on macOS and with gcc on Linux.
+    - README: building, running, testing, and how to get GoogleTest (Homebrew, apt, or the opt-in download).
+
+started 2026-11-25T01:25:19Z
+repo-kickoff: asking the AI command to add the c-cli type: /Users/randall/Desktop/engineering/software/repos/repo-kickoff/lib/ai-claude.sh
+I wrote the `c-cli` type. `repo-kickoff --check-type c-cli` prints `ok: c-cli has a description and a template, and its smoke test passes`, and shellcheck finds nothing in `tests/smoke.sh`.
+
+GoogleTest isn't installed on this Mac, so the check only covered the case without it: the program built, its output checks passed, and the smoke test reported the unit tests as skipped. The GoogleTest tests have never been compiled or run, so neither the test file nor the opt-in download is verified yet.
+
+**Files in `types/c-cli/`:**
+- `description`: one line describing the type.
+- `template/CMakeLists.txt`: needs CMake 3.14 or later. It builds a static C11 library (`{{NAME_SNAKE}}_lib`) and a thin `{{NAME}}` executable. The library target gets its own name because, for a name without dashes, it would otherwise clash with the executable. The version comes from `project(VERSION 0.1.0)`. GoogleTest is handled the way you asked:
+  - If `find_package(GTest)` finds an installed copy, the tests are built and registered with CTest.
+  - If not, it downloads GoogleTest 1.15.2 with FetchContent, but only when `-D{{NAME_SNAKE}}_FETCH_GOOGLETEST=ON` is set (off by default).
+  - With neither, it builds the program and prints a "Unit tests: skipped" message.
+- `template/include/{{NAME_SNAKE}}.h`: the library's header, with `{{NAME_SNAKE}}_` function prefixes, a `{{NAME_SNAKE}}_H` include guard and `extern "C"` so C++ can include it.
+- `template/src/{{NAME_SNAKE}}.c`: the logic. It prints the placeholder line and handles `--help`/`-h` and `--version`. An unknown argument prints the usage and exits with status 2.
+- `template/src/main.c`: just calls `{{NAME_SNAKE}}_run(argc, argv, stdout, stderr)`.
+- `template/tests/{{NAME_SNAKE}}_test.cpp`: GoogleTest tests that call the C functions directly and capture their output in temporary files.
+- `template/tests/smoke.sh` (executable): fails with a clear message if cmake or ctest is missing. It configures and builds in a `mktemp -d` folder with the download turned off, then checks the placeholder line, `--help`, `--version`, and that an unknown option fails. It runs ctest only if the build recorded that GoogleTest was found; otherwise it says the tests were skipped.
+- `template/README.md`: covers the layout, building, running, testing, getting GoogleTest (Homebrew, apt, or the opt-in download) and the choices made.
+- `template/.gitignore`: build folders, in-source CMake files, build products and editor files.
+
+**Decisions to know about:**
+- **No checksum on the download:** the opt-in download pins the GoogleTest 1.15.2 release URL but has no checksum. I couldn't fetch the file here to confirm one, and a wrong checksum would break the download every time. Adding a `URL_HASH` line would make it safer.
+- **C++17 tests:** they're compiled as C++17 because recent GoogleTest releases require it.
+
+None of your requirements conflicted with the rules.
+
+To exercise the unit-test path, run `brew install googletest` and then the check again.
+repo-kickoff: checking the new c-cli type
+ok: c-cli has a description and a template, and its smoke test passes
+Added the c-cli type to /Users/randall/Desktop/engineering/software/repos/repo-kickoff/types/c-cli.
+Review it, then commit it to keep it: git -C /Users/randall/Desktop/engineering/software/repos/repo-kickoff add types/c-cli
+Created demo from the c-cli type.
+exit 0
+ended 2026-11-25T01:28:26Z

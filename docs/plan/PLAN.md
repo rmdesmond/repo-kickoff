@@ -244,12 +244,12 @@ Done when:
 ### T-020: Teach c-cli with the real Claude
 Depends on: T-019
 Done when:
-- [ ] `repo-kickoff --yes --hint "..." c-cli demo`, run by hand on macOS with the real `claude`, teaches the `c-cli` type: CMake, a C program printing its placeholder line with `--help` and `--version`, GoogleTest unit tests, `{{NAME_SNAKE}}` for C identifiers
-- [ ] Its CMake uses an installed GoogleTest when found, and downloads it with `FetchContent` only when the developer opts in; its smoke test builds and runs the program, and runs the gtest tests only when GoogleTest is present
-- [ ] `--check-type c-cli` passes on macOS without GoogleTest, and with it after `brew install googletest`, where `ctest` runs the gtest tests and they pass
-- [ ] The prompt file is adjusted for anything the run showed
-- [ ] The run's log is saved in `docs/runs/`
-- [ ] The reviewed `types/c-cli/` is committed and passes `--check-type` in CI
+- [x] `repo-kickoff --yes --hint "..." c-cli demo`, run by hand on macOS with the real `claude`, teaches the `c-cli` type: CMake, a C program printing its placeholder line with `--help` and `--version`, GoogleTest unit tests, `{{NAME_SNAKE}}` for C identifiers
+- [x] Its CMake uses an installed GoogleTest when found, and downloads it with `FetchContent` only when the developer opts in; its smoke test builds and runs the program, and runs the gtest tests only when GoogleTest is present
+- [x] `--check-type c-cli` passes on macOS without GoogleTest, and with it after `brew install googletest`, where `ctest` runs the gtest tests and they pass
+- [x] The prompt file is adjusted for anything the run showed
+- [x] The run's log is saved in `docs/runs/`
+- [x] The reviewed `types/c-cli/` is committed and passes `--check-type` in CI
 
 ### T-021: Integration test: build a generated C repository
 Depends on: T-020
