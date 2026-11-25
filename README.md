@@ -113,6 +113,15 @@ $ repo-kickoff --yes python-cli mytool
 
 `repo-kickoff --teach <type>` adds and checks a type without generating a repository.
 
+Left to itself, Claude makes the choices a type needs: the build system, the test framework, the layout. To make them yourself, add `--hint` with your requirements. repo-kickoff adds them to the prompt under *Requirements from the user*:
+
+```sh
+repo-kickoff --yes --hint "Build with CMake. Unit tests use GoogleTest." c-cli my-tool
+repo-kickoff --teach rust-cli --hint "Use clap for arguments."
+```
+
+The rules in the prompt still win over a hint: a smoke test never downloads anything, for example. `--hint` is only for teaching: with a type the catalog has, `--list` or `--check-type`, it's a usage error.
+
 Teaching needs [Claude Code](https://claude.com/claude-code) installed and signed in; it runs on your account. Known types never need it. If the catalog is in a git working copy, repo-kickoff warns about anything Claude changed outside the new type's folder.
 
 To use another AI command, set `REPO_KICKOFF_AI` to an executable. repo-kickoff runs it as `<command> <type> <catalog> <prompt-file>`, and it must write `<catalog>/<type>/`. The tests use a fake one, `tests/fixtures/fake-ai.sh`.
