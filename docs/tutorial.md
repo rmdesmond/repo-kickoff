@@ -1,6 +1,6 @@
-# Tutorial: start two projects with repo-kickoff
+# Tutorial: start three projects with repo-kickoff
 
-In this tutorial you install repo-kickoff, start a bash tool called `greet` and a Python tool called `my-tool`, and see how a type the catalog didn't have, `python-cli`, was taught to repo-kickoff by Claude, so that you can now use it with no AI at all.
+In this tutorial you install repo-kickoff, start a bash tool called `greet`, a Python tool called `my-tool` and a C tool called `word-count`, and see how types the catalog didn't have, `python-cli` and `c-cli`, were taught to repo-kickoff by Claude, so that you can now use them with no AI at all.
 
 Paths are shortened: `~` is your home folder, and you work in it. Claude's replies, in the recorded step, vary in wording from run to run.
 
@@ -8,6 +8,7 @@ Paths are shortened: `~` is your home folder, and you work in it. Claude's repli
 
 - macOS or Linux, with bash 3.2 or later and `git`
 - for the `python-cli` type: `python3`, 3.8 or later
+- for the `c-cli` type: CMake 3.14 or later and a C and C++ compiler (Apple clang or gcc). GoogleTest is optional: with it, the C tool's unit tests run too (`brew install googletest`, or `apt install libgtest-dev`)
 - only for teaching new types: [Claude Code](https://claude.com/claude-code), installed and signed in
 
 ## Install
@@ -24,6 +25,7 @@ See which types it knows:
 ```console
 $ repo-kickoff --list
 bash-cli    A command-line tool written as a single bash script
+c-cli       A command-line program in C11, built with CMake, with GoogleTest unit tests
 python-cli  A command-line tool written in Python, packaged with pyproject.toml
 ```
 
@@ -68,9 +70,52 @@ $ PYTHONPATH=src python3 -m my_tool --version
 my-tool 0.1.0
 $ ls src
 my_tool
+$ cd ..
 ```
 
 The command and the project are named `my-tool`, and the Python package inside is `my_tool`, because a Python package name can't contain a dash. The type's template writes the package as `src/{{NAME_SNAKE}}/`, and repo-kickoff turns `{{NAME_SNAKE}}` into the name with underscores for dashes, just as it turns `{{NAME}}` into the name itself.
+
+## Start a C tool
+
+The `c-cli` type gives a C program built with CMake:
+
+```console
+$ repo-kickoff c-cli word-count
+Created word-count from the c-cli type.
+$ cd word-count
+$ cmake -S . -B build >/dev/null && cmake --build build >/dev/null
+$ build/word-count
+word-count: placeholder - nothing implemented yet
+$ build/word-count --version
+word-count 0.1.0
+$ ls include src tests
+include:
+word_count.h
+
+src:
+main.c
+word_count.c
+
+tests:
+smoke.sh
+word_count_test.cpp
+```
+
+As with Python, the program is `word-count` and the C names are `word_count`: the header, the source file, and every function, such as `word_count_run()`. `main.c` only calls into `word_count.c`, so the GoogleTest tests in `tests/word_count_test.cpp` can call the same functions. The smoke test builds in a temporary folder and runs them when GoogleTest is installed:
+
+```console
+$ tests/smoke.sh
+smoke: configuring in …/word-count-smoke.VblxSE
+smoke: building
+smoke: running unit tests
+…
+100% tests passed, 0 tests failed out of 5
+…
+smoke: ok
+$ cd ..
+```
+
+Without GoogleTest it builds and checks the program, and prints `smoke: unit tests skipped: GoogleTest not found (see README.md)` instead. Nothing is ever downloaded unless you ask: `word-count/README.md` shows how to have CMake fetch GoogleTest.
 
 ## How python-cli got there: teaching a type
 
@@ -90,7 +135,27 @@ Created demo from the python-cli type.
 
 It took about eight minutes. The type was then reviewed and committed, which is why your clone has it. (Claude first named the package `app`, since repo-kickoff then had no `{{NAME_SNAKE}}`; the type was changed to use it afterwards.) Asking for `python-cli` again, as you did above, uses the catalog and never calls Claude.
 
-To teach a type of your own, ask for it at a terminal and answer `y`, or add `--yes`. Then review `types/<type>/`, and commit it so that every clone gets it.
+## Teaching with requirements: c-cli
+
+Left to itself, Claude picks the build system, the test framework and the layout. `c-cli` was taught with requirements, given with `--hint`: CMake, GoogleTest, the logic in a small library so the tests can call it, and a smoke test that never downloads. repo-kickoff adds the hint to Claude's prompt:
+
+```console
+$ repo-kickoff --yes --hint "$(cat hint.txt)" c-cli demo
+repo-kickoff: asking the AI command to add the c-cli type: ~/repo-kickoff/lib/ai-claude.sh
+I wrote the `c-cli` type. `repo-kickoff --check-type c-cli` prints `ok: c-cli has a description and a template, and its smoke test passes`, and shellcheck finds nothing in `tests/smoke.sh`.
+
+GoogleTest isn't installed on this Mac, so the check only covered the case without it: the program built, its output checks passed, and the smoke test reported the unit tests as skipped. The GoogleTest tests have never been compiled or run, so neither the test file nor the opt-in download is verified yet.
+…
+repo-kickoff: checking the new c-cli type
+ok: c-cli has a description and a template, and its smoke test passes
+Added the c-cli type to ~/repo-kickoff/types/c-cli.
+Review it, then commit it to keep it: git -C ~/repo-kickoff add types/c-cli
+Created demo from the c-cli type.
+```
+
+It took about three minutes. Claude's warning was right: built with GoogleTest, the tests didn't compile, because a helper's name clashed with one of GoogleTest's own. The fix was made in review, before the type was committed. Review is part of teaching: repo-kickoff checks what it can, and you check the rest.
+
+To teach a type of your own, ask for it at a terminal and answer `y`, or add `--yes`, with `--hint` for any requirements. Then review `types/<type>/`, and commit it so that every clone gets it.
 
 ## More ways in
 
@@ -107,7 +172,8 @@ Leave out the type or the name at a terminal, and repo-kickoff asks for it. `--i
 $ printf "1\nnotes-tool\n" | repo-kickoff --interactive
 Known types:
   1) bash-cli    A command-line tool written as a single bash script
-  2) python-cli  A command-line tool written in Python, packaged with pyproject.toml
+  2) c-cli       A command-line program in C11, built with CMake, with GoogleTest unit tests
+  3) python-cli  A command-line tool written in Python, packaged with pyproject.toml
 Type (number or name): Name of the new repository: Created notes-tool from the bash-cli type.
 ```
 
@@ -116,6 +182,8 @@ Check that a type is complete, by generating a sample repository and running its
 ```console
 $ repo-kickoff --check-type python-cli
 ok: python-cli has a description and a template, and its smoke test passes
+$ repo-kickoff --check-type c-cli
+ok: c-cli has a description and a template, and its smoke test passes
 ```
 
 ## When something goes wrong
@@ -126,7 +194,7 @@ ok: python-cli has a description and a template, and its smoke test passes
 $ repo-kickoff bash-cli My_Tool
 repo-kickoff: invalid name: My_Tool (use lower-case letters, digits and dashes, starting with a letter)
 
-Usage: repo-kickoff [--dest DIR] [--interactive] [--yes] [<type> [<name>]]
+Usage: repo-kickoff [--dest DIR] [--interactive] [--yes] [--hint TEXT] [<type> [<name>]]
 …
 ```
 
@@ -142,7 +210,7 @@ repo-kickoff: greet already exists
 ```console
 $ repo-kickoff rust-cli fast-tool </dev/null
 repo-kickoff: unknown type: rust-cli
-repo-kickoff: known types: bash-cli, python-cli
+repo-kickoff: known types: bash-cli, c-cli, python-cli
 repo-kickoff: to have the AI command add it, run again with --yes (or at a terminal)
 ```
 
@@ -151,4 +219,4 @@ repo-kickoff: to have the AI command add it, run again with --yes (or at a termi
 - [README.md](../README.md): every option, the catalog's layout, and adding a type by hand
 - `repo-kickoff --help`
 
-Outputs from runs of 73e0846 and 4046b53 (2026-11-24), and a recorded run from 2026-11-24.
+Outputs from a run of 46185a4 (2026-11-25, macOS, GoogleTest installed), and recorded teaching runs from 2026-11-24 and 2026-11-25 (docs/runs/).
