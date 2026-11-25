@@ -1,6 +1,6 @@
 # Plan: repo-kickoff
 
-Status: accepted 2026-11-24
+Status: draft
 
 repo-kickoff creates the starting skeleton of a new repository from a known project type: a bash CLI, a Python CLI, a C CLI, a C++ library, a PDF generator and so on. You run `repo-kickoff` with a type and a name, as arguments or answered at prompts, and it assembles the target repository from reusable components kept in its own catalog, with no AI involved. When asked for a type it doesn't know, it asks Claude (`claude -p`) to add that type to the catalog, checks the result, and then generates the target repository from it the same AI-free way. From then on the type is created without the AI. Taught types are written into your local clone of repo-kickoff, for you to review and commit.
 
@@ -8,11 +8,14 @@ repo-kickoff creates the starting skeleton of a new repository from a known proj
 
 In:
 - the `repo-kickoff` command (bash 3.2 or later, macOS and Linux), run with arguments (`repo-kickoff <type> <name> [--dest DIR]`) or with prompts for whatever is missing
-- a catalog of types: one folder per type, holding template files with `{{NAME}}` placeholders
+- a catalog of types: one folder per type, holding template files with `{{NAME}}` placeholders, and `{{NAME_SNAKE}}` for the name in snake_case (`my-tool` → `my_tool`), for languages whose identifiers can't contain dashes
 - `--list`, to show the known types
 - the first type, `bash-cli`: a script that takes its name and prints a placeholder line to stdout, with `--help` and `--version`
 - a type checker, which confirms a type is complete and that a repository generated from it passes its own smoke test
 - unknown types taught through `claude -p`: teach first, check, then generate, with the AI command swappable so tests use a fake AI
+- requirements passed to the AI when teaching a type (`--hint`)
+- the `python-cli` type using `{{NAME_SNAKE}}` for its package name
+- a `c-cli` type: a C command-line program built with CMake, with GoogleTest unit tests, taught by Claude
 - tests for all of the above, including the AI path through a fake AI
 
 Out:
@@ -20,12 +23,15 @@ Out:
 - changing the i2r skills to use repo-kickoff
 - types beyond `bash-cli` in the first release, apart from those taught through the AI path
 - Windows
+- other derived name forms (`{{NAME_PASCAL}}`, upper case, …), and refusing names that are keywords in a type's language (a repository named `class` gets a Python package named `class`)
+- changing repositories generated before a type changed
 
 ## Constraints
 
 - **Language:** bash, compatible with bash 3.2 (macOS's default) and bash 4 and 5 (Linux). No associative arrays, `${var,,}`, `mapfile` or other bash 4 features.
 - **Tools:** only POSIX tools that behave the same on BSD (macOS) and GNU (Linux): no `sed -i`, no `readlink -f`. No Python, Node or other runtime.
-- **Templates:** plain `{{NAME}}` placeholders, replaced with `sed`. No template engine.
+- **Templates:** plain `{{NAME}}` and `{{NAME_SNAKE}}` placeholders, replaced with `sed`. No template engine (decision 0008).
+- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is optional: `c-cli` uses an installed copy when there is one, and its smoke test runs the gtest tests only then (decision 0009).
 - **AI:** `claude` is needed only to teach an unknown type. Known types work without it and without a network.
 - **Lint:** `shellcheck`.
 - **Tests:** a plain bash test runner, `tests/run.sh`, not `bats`. CI runs on Linux; work-issue runs the same commands locally on macOS.
@@ -41,7 +47,7 @@ Target: none - repo-kickoff is used from a git clone: clone the repository and s
 
 ## Verification strategy
 
-Test levels: unit (single behaviours of `repo-kickoff`, run against fixture catalogs in temporary folders) and integration (the command run end to end through a symlink on `PATH`, generating repositories and running their smoke tests). Automated tests always use a fake AI. The real `claude` is exercised by hand, in T-015.
+Test levels: unit (single behaviours of `repo-kickoff`, run against fixture catalogs in temporary folders) and integration (the command run end to end through a symlink on `PATH`, generating repositories and running their smoke tests). Automated tests always use a fake AI. The real `claude` is exercised by hand, in T-015 and T-020.
 
 | Stage | Enabled | Run command, or reason if disabled |
 |---|---|---|
@@ -193,3 +199,60 @@ Done when:
 - [x] `repo-kickoff python-cli demo` run by hand on macOS with the real `claude` teaches the `python-cli` type and generates `demo`
 - [x] The prompt file is adjusted for anything the run showed
 - [x] The taught `types/python-cli/` is committed and passes `--check-type` in CI
+
+## M4: Snake-case names
+
+Release: v0.3.0
+
+Types can use `{{NAME_SNAKE}}` wherever a language needs an identifier, and `python-cli` does: `repo-kickoff python-cli my-tool` gives a `my_tool` package.
+
+### T-016: Add the {{NAME_SNAKE}} placeholder
+Depends on: none
+Done when:
+- [ ] The generator replaces `{{NAME_SNAKE}}` with the name, dashes turned into underscores, in file contents and in file and folder names, alongside `{{NAME}}`
+- [ ] The README's catalog section describes it
+- [ ] `lib/teach-prompt.md` describes it, in place of the advice to use a fixed identifier
+- [ ] Unit tests cover contents, file and folder names, a name with no dashes, and both placeholders in one file
+
+### T-017: Use {{NAME_SNAKE}} in the python-cli type
+Depends on: T-016
+Done when:
+- [ ] The package is `src/{{NAME_SNAKE}}/`, and no `app` package remains
+- [ ] `pyproject.toml`, `__main__.py`, the unit tests, `tests/smoke.sh` (`python3 -m {{NAME_SNAKE}}`) and the template's README use it, and the README's paragraph on renaming the package is gone
+- [ ] `repo-kickoff --check-type python-cli` passes, and the template's shell files pass shellcheck
+
+### T-018: Integration test: a dashed Python name
+Depends on: T-017
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff python-cli my-tool` creates `my-tool/src/my_tool/` and no `app` folder
+- [ ] In it, `PYTHONPATH=src python3 -m my_tool --version` prints `my-tool 0.1.0`, and `tests/smoke.sh` passes
+
+## M5: A C command-line type
+
+Release: v0.4.0
+
+`repo-kickoff c-cli <name>` gives a C program built with CMake, with GoogleTest unit tests, and teaching can be given the user's requirements.
+
+### T-019: Pass requirements when teaching a type
+Depends on: T-016
+Done when:
+- [ ] `--hint TEXT` adds the text to the prompt under *Requirements from the user*, for teaching through `--yes`, `--teach` or the question at a terminal; without `--hint`, the section is left out
+- [ ] `--hint` without teaching (a known type, `--list`, `--check-type`) is a usage error
+- [ ] The README explains it
+- [ ] Unit tests check the fake AI's prompt holds the hint, and has no such section without one
+
+### T-020: Teach c-cli with the real Claude
+Depends on: T-019
+Done when:
+- [ ] `repo-kickoff --yes --hint "..." c-cli demo`, run by hand on macOS with the real `claude`, teaches the `c-cli` type: CMake, a C program printing its placeholder line with `--help` and `--version`, GoogleTest unit tests, `{{NAME_SNAKE}}` for C identifiers
+- [ ] Its CMake uses an installed GoogleTest when found, and downloads it with `FetchContent` only when the developer opts in; its smoke test builds and runs the program, and runs the gtest tests only when GoogleTest is present
+- [ ] `--check-type c-cli` passes on macOS without GoogleTest, and with it after `brew install googletest`, where `ctest` runs the gtest tests and they pass
+- [ ] The prompt file is adjusted for anything the run showed
+- [ ] The run's log is saved in `docs/runs/`
+- [ ] The reviewed `types/c-cli/` is committed and passes `--check-type` in CI
+
+### T-021: Integration test: build a generated C repository
+Depends on: T-020
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
+- [ ] The built program prints `my-tool: placeholder - nothing implemented yet`
