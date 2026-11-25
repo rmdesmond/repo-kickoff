@@ -236,10 +236,10 @@ Release: v0.4.0
 ### T-019: Pass requirements when teaching a type
 Depends on: T-016
 Done when:
-- [ ] `--hint TEXT` adds the text to the prompt under *Requirements from the user*, for teaching through `--yes`, `--teach` or the question at a terminal; without `--hint`, the section is left out
-- [ ] `--hint` without teaching (a known type, `--list`, `--check-type`) is a usage error
-- [ ] The README explains it
-- [ ] Unit tests check the fake AI's prompt holds the hint, and has no such section without one
+- [x] `--hint TEXT` adds the text to the prompt under *Requirements from the user*, for teaching through `--yes`, `--teach` or the question at a terminal; without `--hint`, the section is left out
+- [x] `--hint` without teaching (a known type, `--list`, `--check-type`) is a usage error
+- [x] The README explains it
+- [x] Unit tests check the fake AI's prompt holds the hint, and has no such section without one
 
 ### T-020: Teach c-cli with the real Claude
 Depends on: T-019

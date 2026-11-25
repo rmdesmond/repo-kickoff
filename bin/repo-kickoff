@@ -31,10 +31,10 @@ TYPES_DIR=${REPO_KICKOFF_TYPES:-$ROOT/types}
 
 usage() {
 	cat <<EOF
-Usage: repo-kickoff [--dest DIR] [--interactive] [--yes] [<type> [<name>]]
+Usage: repo-kickoff [--dest DIR] [--interactive] [--yes] [--hint TEXT] [<type> [<name>]]
        repo-kickoff --list
        repo-kickoff --check-type <type>
-       repo-kickoff --teach <type>
+       repo-kickoff --teach <type> [--hint TEXT]
        repo-kickoff --help | --version
 
 Generate a starter repository named <name> from the catalog type <type>.
@@ -55,6 +55,8 @@ Options:
                check it; a type that fails the check is removed
   -y, --yes    add an unknown <type> with the AI command without asking;
                needed to add one when standard input isn't a terminal
+  --hint TEXT  when teaching a new type, pass TEXT to the AI command as the
+               user's requirements (a build system, a test framework, ...)
   --interactive
                ask for a missing <type> or <name> even when standard input
                isn't a terminal, reading the answers from it
@@ -200,10 +202,14 @@ sed_escape() {
 	printf '%s' "$1" | sed 's/[\/&]/\\&/g'
 }
 
+# The user's requirements for a type being taught (--hint), or empty.
+HINT=""
+
 # ask_ai TYPE: have the AI command write TYPE into the catalog. The command is
 # $REPO_KICKOFF_AI, or lib/ai-claude.sh, which needs `claude` on PATH. It gets
 # the type, the catalog's absolute path and a file holding the prompt
-# (lib/teach-prompt.md, filled in). Fails if the command fails.
+# (lib/teach-prompt.md, filled in, then $HINT under its own heading if set).
+# Fails if the command fails.
 ask_ai() {
 	local type=$1 ai catalog status=0
 	if [ -n "${REPO_KICKOFF_AI:-}" ]; then
@@ -223,6 +229,13 @@ ask_ai() {
 		-e "s/{{CATALOG}}/$(sed_escape "$catalog")/g" \
 		-e "s/{{KICKOFF}}/$(sed_escape "$ROOT/bin/repo-kickoff")/g" \
 		"$ROOT/lib/teach-prompt.md" >"$PROMPT_FILE"
+	if [ -n "$HINT" ]; then
+		{
+			printf '\n## Requirements from the user\n\n'
+			printf 'The person asking for this type gave these requirements. Follow them. Where one conflicts with the rules above (a smoke test that needs a network, say), the rules above win: say so in your reply.\n\n'
+			printf '%s\n' "$HINT"
+		} >>"$PROMPT_FILE"
+	fi
 
 	echo "repo-kickoff: asking the AI command to add the $type type: $ai" >&2
 	"$ai" "$type" "$catalog" "$PROMPT_FILE" </dev/null >&2 || status=$?
@@ -383,7 +396,7 @@ generate() {
 }
 
 main() {
-	local type="" name="" dest_dir="" interactive="" check="" teach="" yes="" teaching=""
+	local type="" name="" dest_dir="" interactive="" check="" teach="" yes="" teaching="" list=""
 	local arg prefix target
 	while [ $# -gt 0 ]; do
 		arg=$1
@@ -406,8 +419,7 @@ main() {
 			return 0
 			;;
 		--list)
-			list_types
-			return 0
+			list=yes
 			;;
 		--interactive)
 			interactive=yes
@@ -430,6 +442,14 @@ main() {
 			;;
 		--teach=*)
 			teach=${arg#--teach=}
+			;;
+		--hint)
+			[ $# -gt 0 ] || usage_error "--hint needs text"
+			HINT=$1
+			shift
+			;;
+		--hint=*)
+			HINT=${arg#--hint=}
 			;;
 		--)
 			break
@@ -460,6 +480,11 @@ main() {
 		shift
 	done
 
+	if [ -n "$list" ]; then
+		[ -z "$HINT" ] || usage_error "--hint is only for teaching a new type, not with --list"
+		list_types
+		return 0
+	fi
 	if [ -n "$teach" ]; then
 		[ -z "$type" ] || usage_error "unexpected argument: $type"
 		teach_type "$teach"
@@ -467,6 +492,7 @@ main() {
 	fi
 	if [ -n "$check" ]; then
 		[ -z "$type" ] || usage_error "unexpected argument: $type"
+		[ -z "$HINT" ] || usage_error "--hint is only for teaching a new type, not with --check-type"
 		check_type "$check"
 		return
 	fi
@@ -486,6 +512,9 @@ main() {
 		prefix=""
 	fi
 
+	if [ -n "$HINT" ] && [ -z "$type" ]; then
+		usage_error "--hint is only for teaching a new type: give the <type> to teach"
+	fi
 	if [ -z "$type" ]; then
 		type=$(ask_type)
 	fi
@@ -498,6 +527,8 @@ main() {
 	if [ ! -e "$TYPES_DIR/$type" ]; then
 		want_teach "$type" "$yes" "$interactive"
 		teaching=yes
+	elif [ -n "$HINT" ]; then
+		usage_error "--hint is only for teaching a new type, and the catalog already has $type"
 	elif [ ! -d "$TYPES_DIR/$type/template" ]; then
 		die "type $type has no template folder: $TYPES_DIR/$type/template"
 	fi

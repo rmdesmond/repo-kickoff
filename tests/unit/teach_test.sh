@@ -165,3 +165,71 @@ test_no_warning_when_the_ai_stays_inside_the_type() {
 	assert_status 0
 	assert_not_contains "$ERR" "warning"
 }
+
+test_hint_is_added_to_the_prompt() {
+	setup
+	run "$KICKOFF" --yes --hint "Build with CMake; test with GoogleTest." fresh greet
+	assert_status 0
+	assert_contains "$(cat "$FAKE_AI_LOG.prompt")" "## Requirements from the user"
+	assert_contains "$(cat "$FAKE_AI_LOG.prompt")" "Build with CMake; test with GoogleTest."
+	assert_dir greet
+}
+
+test_without_a_hint_the_prompt_has_no_requirements_section() {
+	setup
+	run "$KICKOFF" --yes fresh greet
+	assert_status 0
+	assert_not_contains "$(cat "$FAKE_AI_LOG.prompt")" "Requirements from the user"
+}
+
+test_hint_works_with_teach_and_an_equals_sign() {
+	setup
+	run "$KICKOFF" --teach fresh --hint="Use make."
+	assert_status 0
+	assert_contains "$(cat "$FAKE_AI_LOG.prompt")" "Use make."
+}
+
+test_hint_works_when_asked_at_a_terminal() {
+	setup
+	printf 'y\n' >answers
+	run "$KICKOFF" --interactive --hint "Keep it small." fresh greet <answers
+	assert_status 0
+	assert_contains "$(cat "$FAKE_AI_LOG.prompt")" "Keep it small."
+}
+
+test_hint_keeps_several_lines() {
+	setup
+	run "$KICKOFF" --teach fresh --hint "first line
+second line & a \\ backslash"
+	assert_status 0
+	assert_contains "$(cat "$FAKE_AI_LOG.prompt")" "first line
+second line & a \\ backslash"
+}
+
+test_hint_without_teaching_is_a_usage_error() {
+	setup
+	"$KICKOFF" --teach known >/dev/null 2>&1
+	rm -f "$FAKE_AI_LOG"
+	run "$KICKOFF" --hint "x" known greet
+	assert_status 2
+	assert_contains "$ERR" "--hint is only for teaching a new type, and the catalog already has known"
+	assert_not_exists greet
+	run "$KICKOFF" --hint "x" --list
+	assert_status 2
+	assert_contains "$ERR" "not with --list"
+	run "$KICKOFF" --hint "x" --check-type known
+	assert_status 2
+	assert_contains "$ERR" "not with --check-type"
+	run "$KICKOFF" --hint
+	assert_status 2
+	assert_contains "$ERR" "--hint needs text"
+	assert_eq 0 "$(ai_calls)"
+}
+
+test_hint_needs_the_type_when_prompting() {
+	setup
+	printf '1\ngreet\n' >answers
+	run "$KICKOFF" --interactive --hint "x" <answers
+	assert_status 2
+	assert_contains "$ERR" "give the <type> to teach"
+}
