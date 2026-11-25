@@ -1,6 +1,6 @@
-# Tutorial: start four projects with repo-kickoff
+# Tutorial: start projects with repo-kickoff
 
-In this tutorial you install repo-kickoff, start a bash tool called `greet`, a Python tool called `my-tool`, a C tool called `word-count` and a C library called `text-stats`, and see how types the catalog didn't have, `python-cli` and `c-cli`, were taught to repo-kickoff by Claude, so that you can now use them with no AI at all.
+In this tutorial you install repo-kickoff, start a bash tool called `greet`, a Python tool called `my-tool`, a C tool called `word-count`, a C library called `text-stats`, and a C++ tool and library, and see how types the catalog didn't have, such as `python-cli` and `c-cli`, were taught to repo-kickoff by Claude, so that you can now use them with no AI at all.
 
 Paths are shortened: `~` is your home folder, and you work in it. Claude's replies, in the recorded step, vary in wording from run to run.
 
@@ -8,7 +8,7 @@ Paths are shortened: `~` is your home folder, and you work in it. Claude's repli
 
 - macOS or Linux, with bash 3.2 or later and `git`
 - for the `python-cli` type: `python3`, 3.8 or later
-- for the `c-cli` and `c-lib` types: CMake 3.14 or later, a C and C++ compiler (Apple clang or gcc), and GoogleTest for their unit tests (`brew install googletest`, or `apt install libgtest-dev`)
+- for the `c-cli`, `c-lib`, `cpp-cli` and `cpp-lib` types: CMake 3.14 or later, a C and C++ compiler (Apple clang or gcc), and GoogleTest for their unit tests (`brew install googletest`, or `apt install libgtest-dev`)
 - only for teaching new types: [Claude Code](https://claude.com/claude-code), installed and signed in
 
 ## Install
@@ -183,6 +183,71 @@ $ cd ..
 
 The unit tests are built only when `text-stats` is the top-level project. A project that pulls it in with `add_subdirectory()` or `FetchContent` needs neither GoogleTest nor a C++ compiler.
 
+## Start a C++ tool and a C++ library
+
+`cpp-cli` and `cpp-lib` are the C++17 counterparts of the C types. They have the same layout ideas and the same GoogleTest tests, and the code lives in a namespace named after the project:
+
+```console
+$ repo-kickoff cpp-cli hello-cpp
+Created hello-cpp from the cpp-cli type.
+$ cd hello-cpp
+$ ls include/hello_cpp src tests
+include/hello_cpp:
+hello_cpp.hpp
+
+src:
+hello_cpp.cpp
+main.cpp
+
+tests:
+hello_cpp_test.cpp
+smoke.sh
+$ cmake -S . -B build >/dev/null && cmake --build build >/dev/null
+$ build/hello-cpp
+hello-cpp: placeholder - nothing implemented yet
+$ build/hello-cpp --version
+hello-cpp 0.1.0
+$ (cd build && ctest)
+…
+100% tests passed, 0 tests failed out of 6
+…
+$ cd ..
+```
+
+The logic is in `namespace hello_cpp`, and `main.cpp` only calls `hello_cpp::run()`, so the tests call the same function. `cpp-lib` gives a library that installs a CMake package, as `c-lib` does. Its smoke test makes the same round trip:
+
+```console
+$ repo-kickoff cpp-lib geometry
+Created geometry from the cpp-lib type.
+$ cd geometry
+$ ls include/geometry src tests cmake
+cmake:
+geometryConfig.cmake.in
+
+include/geometry:
+geometry.hpp
+
+src:
+geometry.cpp
+
+tests:
+geometry_test.cpp
+smoke.sh
+$ tests/smoke.sh
+smoke: configuring in …/geometry-smoke.DDZQiV/build
+smoke: building
+smoke: running unit tests
+…
+100% tests passed, 0 tests failed out of 2
+…
+smoke: installing into …/geometry-smoke.DDZQiV/prefix
+smoke: building a program against the installed package
+smoke: ok
+$ cd ..
+```
+
+Another project uses it with `find_package(geometry)` and links `geometry::geometry`, or pulls it in with `add_subdirectory()`. `geometry/README.md` shows both.
+
 ## How python-cli got there: teaching a type
 
 `python-cli` wasn't always in the catalog. When repo-kickoff is asked for a type it doesn't know, it can ask Claude to add it. Claude writes only the type's folder, `types/python-cli/`. repo-kickoff checks the new type, removes it if it fails, and otherwise generates your repository from it. This is the run that added `python-cli`, with `--yes` to skip the question repo-kickoff asks at a terminal (`Ask the AI command to add it? [y/N]`):
@@ -221,7 +286,7 @@ Created demo from the c-cli type.
 
 It took about three minutes. Claude's warning was right: built with GoogleTest, the tests didn't compile, because a helper's name clashed with one of GoogleTest's own. The fix was made in review, before the type was committed. Review is part of teaching: repo-kickoff checks what it can, and you check the rest.
 
-`c-lib` came about differently: it was written with Claude in a chat, then reviewed and committed by hand, the same as adding a type yourself (see the README). Either way, the type ends up as a folder in `types/` that repo-kickoff checks with `--check-type`.
+`cpp-cli` and `cpp-lib` were taught the same way, each in under two minutes; their runs are in `docs/runs/`. `c-lib` came about differently: it was written with Claude in a chat, then reviewed and committed by hand, the same as adding a type yourself (see the README). Either way, the type ends up as a folder in `types/` that repo-kickoff checks with `--check-type`.
 
 To teach a type of your own, ask for it at a terminal and answer `y`, or add `--yes`, with `--hint` for any requirements. Then review `types/<type>/`, and commit it so that every clone gets it.
 
@@ -296,4 +361,4 @@ repo-kickoff: to have the AI command add it, run again with --yes (or at a termi
 - [README.md](../README.md): every option, the catalog's layout, and adding a type by hand
 - `repo-kickoff --help`
 
-Outputs from a run of bd00ff1 (2026-11-25, macOS, GoogleTest installed), and recorded teaching runs from 2026-11-24 and 2026-11-25 (docs/runs/).
+Outputs from a run of 50c628a (2026-11-25, macOS, GoogleTest installed), and recorded teaching runs from 2026-11-24 and 2026-11-25 (docs/runs/).
