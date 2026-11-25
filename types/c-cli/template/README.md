@@ -21,7 +21,7 @@ The logic lives in a static library (`lib{{NAME_SNAKE}}.a`) so the tests can cal
 
 - CMake 3.14 or later
 - a C11 compiler: Apple clang (Xcode Command Line Tools) on macOS, gcc on Linux
-- for the unit tests, a C++17 compiler and GoogleTest (see below)
+- for the unit tests, which are built by default: a C++17 compiler and GoogleTest (see below)
 
 ## Building
 
@@ -56,7 +56,7 @@ ctest --test-dir build --output-on-failure   # CMake 3.20 or later
 tests/smoke.sh                               # builds in a temporary folder, checks the program, runs ctest
 ```
 
-The unit tests are built and registered with CTest only when GoogleTest is available. Without it, CMake still configures and builds the program, and prints `Unit tests: skipped - GoogleTest not found`. `tests/smoke.sh` then checks the program and says the unit tests were skipped.
+The unit tests are built by default, and need GoogleTest. Without it, configuring stops with a message saying how to get it. To build only the program, configure with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`. `tests/smoke.sh` always builds and runs the unit tests.
 
 ## Getting GoogleTest
 

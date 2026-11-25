@@ -5,6 +5,7 @@ project({{NAME}}
   DESCRIPTION "A command-line program"
   LANGUAGES C)
 
+option({{NAME_SNAKE}}_BUILD_TESTS "Build the GoogleTest unit tests" ON)
 option({{NAME_SNAKE}}_FETCH_GOOGLETEST
   "Download GoogleTest with FetchContent when no installed copy is found" OFF)
 
@@ -39,18 +40,23 @@ endif()
 install(TARGETS {{NAME}} RUNTIME DESTINATION bin)
 
 # ---------------------------------------------------------------------------
-# Unit tests (GoogleTest, C++): built only when GoogleTest is available.
+# Unit tests: GoogleTest, in C++17. Required unless the tests are turned off.
 # ---------------------------------------------------------------------------
-set(tests_enabled OFF)
-set(gtest_main_target "")
+if({{NAME_SNAKE}}_BUILD_TESTS)
+  set({{NAME_SNAKE}}_gtest_help
+    "Install GoogleTest (brew install googletest, or apt install libgtest-dev), "
+    "configure with -D{{NAME_SNAKE}}_FETCH_GOOGLETEST=ON to download it, "
+    "or turn the tests off with -D{{NAME_SNAKE}}_BUILD_TESTS=OFF.")
 
-include(CheckLanguage)
-check_language(CXX)
-if(CMAKE_CXX_COMPILER)
+  include(CheckLanguage)
+  check_language(CXX)
+  if(NOT CMAKE_CXX_COMPILER)
+    message(FATAL_ERROR "The unit tests need a C++ compiler, and none was found. "
+      "Install one, or turn the tests off with -D{{NAME_SNAKE}}_BUILD_TESTS=OFF.")
+  endif()
   enable_language(CXX)
 
   find_package(GTest QUIET)
-
   if(NOT GTest_FOUND AND NOT GTEST_FOUND AND {{NAME_SNAKE}}_FETCH_GOOGLETEST)
     message(STATUS "GoogleTest not installed: downloading it ({{NAME_SNAKE}}_FETCH_GOOGLETEST=ON)")
     if(POLICY CMP0135)
@@ -68,33 +74,18 @@ if(CMAKE_CXX_COMPILER)
   # GoogleTest's own package (and FetchContent) name the target
   # GTest::gtest_main; CMake's FindGTest before 3.20 names it GTest::Main.
   if(TARGET GTest::gtest_main)
-    set(gtest_main_target GTest::gtest_main)
+    set({{NAME_SNAKE}}_gtest_main GTest::gtest_main)
   elseif(TARGET GTest::Main)
-    set(gtest_main_target GTest::Main)
+    set({{NAME_SNAKE}}_gtest_main GTest::Main)
+  else()
+    message(FATAL_ERROR "GoogleTest not found. " ${{{NAME_SNAKE}}_gtest_help})
   endif()
 
-  if(gtest_main_target)
-    set(tests_enabled ON)
-  endif()
-endif()
-
-if(tests_enabled)
   enable_testing()
   add_executable({{NAME_SNAKE}}_tests tests/{{NAME_SNAKE}}_test.cpp)
   target_link_libraries({{NAME_SNAKE}}_tests
-    PRIVATE {{NAME_SNAKE}}_lib ${gtest_main_target})
+    PRIVATE {{NAME_SNAKE}}_lib ${{{NAME_SNAKE}}_gtest_main})
   target_compile_features({{NAME_SNAKE}}_tests PRIVATE cxx_std_17)
   include(GoogleTest)
   gtest_discover_tests({{NAME_SNAKE}}_tests)
-  message(STATUS "Unit tests: enabled - run them with ctest")
-elseif(NOT CMAKE_CXX_COMPILER)
-  message(STATUS "Unit tests: skipped - no C++ compiler found")
-else()
-  message(STATUS "Unit tests: skipped - GoogleTest not found. Install it "
-    "(brew install googletest, or apt install libgtest-dev) or configure "
-    "with -D{{NAME_SNAKE}}_FETCH_GOOGLETEST=ON to download it")
 endif()
-
-# Read by tests/smoke.sh to decide whether to run ctest.
-set({{NAME_SNAKE}}_TESTS_ENABLED ${tests_enabled} CACHE INTERNAL
-  "Whether the GoogleTest unit tests are built")

@@ -295,11 +295,11 @@ Done when:
 ### T-025: Require GoogleTest in the c-cli type
 Depends on: T-022
 Done when:
-- [ ] `c-cli`'s CMake builds the gtest tests by default, from an installed GoogleTest or a `FetchContent` download only when the developer opts in; with neither, or with no C++ compiler, configuring fails with a message saying how to get GoogleTest or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
-- [ ] Its `tests/smoke.sh` always runs the gtest tests with `ctest`, still never downloads, and has no "skipped" path
-- [ ] The template's README, and the tutorial's requirements for `c-cli`, say GoogleTest is required
-- [ ] `tests/integration/c_cli_test.sh` checks that a generated `my-tool` runs its gtest tests with `ctest` and they pass
-- [ ] `repo-kickoff --check-type c-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [x] `c-cli`'s CMake builds the gtest tests by default, from an installed GoogleTest or a `FetchContent` download only when the developer opts in; with neither, or with no C++ compiler, configuring fails with a message saying how to get GoogleTest or turn the tests off with `-D{{NAME_SNAKE}}_BUILD_TESTS=OFF`
+- [x] Its `tests/smoke.sh` always runs the gtest tests with `ctest`, still never downloads, and has no "skipped" path
+- [x] The template's README, and the tutorial's requirements for `c-cli`, say GoogleTest is required
+- [x] `tests/integration/c_cli_test.sh` checks that a generated `my-tool` runs its gtest tests with `ctest` and they pass
+- [x] `repo-kickoff --check-type c-cli` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
 
 ## M7: C++ types
 

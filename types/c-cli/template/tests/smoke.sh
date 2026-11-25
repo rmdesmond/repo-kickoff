@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Smoke test for {{NAME}}: configures and builds the project in a temporary
 # build folder, checks the program's placeholder line, --help and --version,
-# and runs the unit tests with ctest when GoogleTest was found.
-# It never downloads anything. Run from anywhere: tests/smoke.sh
+# and runs the GoogleTest unit tests with ctest.
+# It never downloads anything, so GoogleTest must be installed. Run from
+# anywhere: tests/smoke.sh
 
 set -eu
 
@@ -28,7 +29,7 @@ cmake -S . -B "$build" \
 	"-D{{NAME_SNAKE}}_FETCH_GOOGLETEST=OFF" \
 	-DFETCHCONTENT_FULLY_DISCONNECTED=ON >"$build/configure.log" 2>&1 || {
 	cat "$build/configure.log" >&2
-	fail "cmake configure failed (is a C compiler installed?)"
+	fail "cmake configure failed (are a C and C++ compiler, and GoogleTest, installed?)"
 }
 
 echo "smoke: building"
@@ -60,11 +61,7 @@ if "$cmd" --no-such-option >/dev/null 2>&1; then
 	fail "an unknown option should exit non-zero"
 fi
 
-if grep -q '^{{NAME_SNAKE}}_TESTS_ENABLED:INTERNAL=ON$' "$build/CMakeCache.txt"; then
-	echo "smoke: running unit tests"
-	(cd "$build" && ctest --output-on-failure) || fail "unit tests failed"
-else
-	echo "smoke: unit tests skipped: GoogleTest not found (see README.md)"
-fi
+echo "smoke: running unit tests"
+(cd "$build" && ctest --output-on-failure) || fail "unit tests failed"
 
 echo "smoke: ok"

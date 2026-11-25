@@ -8,7 +8,7 @@ Paths are shortened: `~` is your home folder, and you work in it. Claude's repli
 
 - macOS or Linux, with bash 3.2 or later and `git`
 - for the `python-cli` type: `python3`, 3.8 or later
-- for the `c-cli` type: CMake 3.14 or later and a C and C++ compiler (Apple clang or gcc). GoogleTest is optional: with it, the C tool's unit tests run too (`brew install googletest`, or `apt install libgtest-dev`)
+- for the `c-cli` type: CMake 3.14 or later, a C and C++ compiler (Apple clang or gcc), and GoogleTest for the C tool's unit tests (`brew install googletest`, or `apt install libgtest-dev`)
 - only for teaching new types: [Claude Code](https://claude.com/claude-code), installed and signed in
 
 ## Install
@@ -102,7 +102,7 @@ smoke.sh
 word_count_test.cpp
 ```
 
-As with Python, the program is `word-count` and the C names are `word_count`: the header, the source file, and every function, such as `word_count_run()`. `main.c` only calls into `word_count.c`, so the GoogleTest tests in `tests/word_count_test.cpp` can call the same functions. The smoke test builds in a temporary folder and runs them when GoogleTest is installed:
+As with Python, the program is `word-count` and the C names are `word_count`: the header, the source file, and every function, such as `word_count_run()`. `main.c` only calls into `word_count.c`, so the GoogleTest tests in `tests/word_count_test.cpp` can call the same functions. The smoke test builds in a temporary folder, checks the program and runs them:
 
 ```console
 $ tests/smoke.sh
@@ -116,7 +116,7 @@ smoke: ok
 $ cd ..
 ```
 
-Without GoogleTest it builds and checks the program, and prints `smoke: unit tests skipped: GoogleTest not found (see README.md)` instead. Nothing is ever downloaded unless you ask: `word-count/README.md` shows how to have CMake fetch GoogleTest.
+The unit tests need GoogleTest. Without it, configuring stops with `GoogleTest not found.` and the three ways out: install it, configure with `-Dword_count_FETCH_GOOGLETEST=ON` to have CMake download it, or build only the program with `-Dword_count_BUILD_TESTS=OFF`. Nothing is ever downloaded unless you ask.
 
 ## How python-cli got there: teaching a type
 
