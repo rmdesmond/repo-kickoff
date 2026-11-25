@@ -1,0 +1,32 @@
+# Build folders
+/build/
+/build-*/
+/cmake-build-*/
+/out/
+/install/
+
+# CMake files from an in-source build
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+Testing/
+cmake_install.cmake
+install_manifest.txt
+_deps/
+
+# Tooling
+compile_commands.json
+.cache/
+.vscode/
+.idea/
+
+# Build products
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.dSYM/
+
+# OS files
+.DS_Store

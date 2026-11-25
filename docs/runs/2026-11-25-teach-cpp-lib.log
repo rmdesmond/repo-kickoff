@@ -1,0 +1,50 @@
+$ repo-kickoff --yes --hint "$(cat hint.txt)" cpp-lib demo-cpp-lib
+
+hint.txt:
+    A C++ library (C++17), built with CMake (3.14 or later), with unit tests in GoogleTest and an installable CMake package.
+    - Layout: the public header under include/{{NAME_SNAKE}}/ (include/{{NAME_SNAKE}}/{{NAME_SNAKE}}.hpp), the source under src/, everything in namespace {{NAME_SNAKE}}. Use {{NAME_SNAKE}} for C++ identifiers, the namespace, file names, include guards and CMake target names, and {{NAME}} for the CMake project and package name.
+    - The placeholder library offers version(), returning the project version (for example "0.1.0"), and placeholder(), returning "{{NAME}}: placeholder - nothing implemented yet".
+    - The library is static by default and shared with -DBUILD_SHARED_LIBS=ON. Give it an alias target {{NAME_SNAKE}}::{{NAME_SNAKE}}. Shared builds must work on macOS and Linux; Windows DLL exports aren't needed.
+    - Install: cmake --install installs the headers, the library and a CMake package (with a version file, SameMajorVersion), so another project uses find_package({{NAME}}) and links {{NAME_SNAKE}}::{{NAME_SNAKE}}. It must also work without installing, from add_subdirectory or FetchContent, with the same target name.
+    - Tests: an option {{NAME_SNAKE}}_BUILD_TESTS, on by default only when this is the top-level project, so a project that pulls it in with add_subdirectory or FetchContent doesn't need GoogleTest. When it's on, GoogleTest is required: use an installed copy from find_package(GTest), or download GoogleTest 1.15.2 with FetchContent (URL https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz, URL_HASH SHA256=7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926) only when the developer opts in with {{NAME_SNAKE}}_FETCH_GOOGLETEST, off by default. With neither, configuring fails with a message saying how to install GoogleTest, opt in to the download, or turn the tests off with -D{{NAME_SNAKE}}_BUILD_TESTS=OFF. Register the tests with gtest_discover_tests.
+    - tests/smoke.sh: in a temporary folder, configure and build with tests on, -D{{NAME_SNAKE}}_FETCH_GOOGLETEST=OFF and -DFETCHCONTENT_FULLY_DISCONNECTED=ON, run ctest, install into a temporary prefix, then build a small consumer program against the installed package with find_package({{NAME}}), run it, and check it prints the placeholder line and a version. Never download anything. Work with Apple clang on macOS and with gcc on Linux.
+    - Warnings (-Wall -Wextra -pedantic) on for gcc and clang, without failing the build.
+    - README: layout, building (static and shared), testing, installing and using it with find_package, add_subdirectory or FetchContent, how to get GoogleTest (Homebrew, apt, or the opt-in download), and the choices made.
+    For an example of a C library with an installable package, read the c-lib type in the same catalog.
+    GoogleTest is installed here, so --check-type builds and runs the tests.
+
+started 2026-11-25T16:31:50Z
+repo-kickoff: asking the AI command to add the cpp-lib type: /Users/randall/Desktop/engineering/software/repos/repo-kickoff/lib/ai-claude.sh
+I wrote the `cpp-lib` type, and `repo-kickoff --check-type cpp-lib` printed `ok:` on the first run. That run built the library and its GoogleTest tests against the installed GoogleTest, ran them with ctest, installed into a temporary prefix, and built and ran a consumer program using `find_package(kickoff-check)`. `shellcheck` reports nothing for `tests/smoke.sh`.
+
+Two requirements were not run, because you asked me not to generate a repository from the type:
+- **Shared build:** `-DBUILD_SHARED_LIBS=ON` was never built.
+- **Use without installing:** using the library from `add_subdirectory` or `FetchContent` wasn't tested.
+
+The CMake setup for both is the same as in the c-lib type. None of your requirements conflicted with the catalog's rules.
+
+Files in `types/cpp-lib/`:
+- **`description`**: one line describing the type.
+- **`template/CMakeLists.txt`**:
+  - Project `{{NAME}}` 0.1.0, C++17. The library `{{NAME_SNAKE}}` is static by default and shared with `-DBUILD_SHARED_LIBS=ON`, with the alias `{{NAME_SNAKE}}::{{NAME_SNAKE}}`. The version is compiled in.
+  - Warnings (`-Wall -Wextra -pedantic`) are on for gcc and clang and don't fail the build.
+  - `{{NAME_SNAKE}}_BUILD_TESTS` is on only when this is the top-level project. With tests on, it uses an installed GoogleTest, or downloads 1.15.2 only if `{{NAME_SNAKE}}_FETCH_GOOGLETEST` is on. With neither, configuring fails and says how to get GoogleTest or turn the tests off. Tests are registered with `gtest_discover_tests`.
+  - Install puts the headers, the library and a package with a `SameMajorVersion` version file under `lib/cmake/{{NAME}}`.
+- **`template/cmake/{{NAME}}Config.cmake.in`**: the package config file.
+- **`template/include/{{NAME_SNAKE}}/{{NAME_SNAKE}}.hpp`** and **`template/src/{{NAME_SNAKE}}.cpp`**: `version()` and `placeholder()` in namespace `{{NAME_SNAKE}}`.
+- **`template/tests/{{NAME_SNAKE}}_test.cpp`**: two GoogleTest tests, one for the version and one for the placeholder line.
+- **`template/tests/smoke.sh`** (executable): does what you specified, with the download off and FetchContent disconnected, so it never uses the network. It fails with a clear message if `cmake` or `ctest` is missing.
+- **`template/README.md`**: covers everything you listed (layout, building, testing, installing, the three ways to use it, getting GoogleTest) plus a "Choices made for you" section.
+- **`template/.gitignore`**: the same as c-lib's.
+
+Choices I made, all recorded in the README:
+- C++17 is a public requirement, so programs that link the library are compiled as C++17 or later too.
+- The static library is built position-independent, so it can also be linked into someone else's shared library.
+- Headers are installed by copying the whole `include/` folder, so headers added later are installed too.
+repo-kickoff: checking the new cpp-lib type
+ok: cpp-lib has a description and a template, and its smoke test passes
+Added the cpp-lib type to /Users/randall/Desktop/engineering/software/repos/repo-kickoff/types/cpp-lib.
+Review it, then commit it to keep it: git -C /Users/randall/Desktop/engineering/software/repos/repo-kickoff add types/cpp-lib
+Created demo-cpp-lib from the cpp-lib type.
+exit 0
+ended 2026-11-25T16:33:28Z
