@@ -224,8 +224,8 @@ Done when:
 ### T-018: Integration test: a dashed Python name
 Depends on: T-017
 Done when:
-- [ ] Through the symlink on `PATH`, `repo-kickoff python-cli my-tool` creates `my-tool/src/my_tool/` and no `app` folder
-- [ ] In it, `PYTHONPATH=src python3 -m my_tool --version` prints `my-tool 0.1.0`, and `tests/smoke.sh` passes
+- [x] Through the symlink on `PATH`, `repo-kickoff python-cli my-tool` creates `my-tool/src/my_tool/` and no `app` folder
+- [x] In it, `PYTHONPATH=src python3 -m my_tool --version` prints `my-tool 0.1.0`, and `tests/smoke.sh` passes
 
 ## M5: A C command-line type
 
