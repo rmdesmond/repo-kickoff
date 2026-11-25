@@ -42,4 +42,6 @@ When the files are written, run:
 
 It generates a sample repository named `kickoff-check` in a temporary folder and runs its `tests/smoke.sh`. Fix any problem it reports and run it again, until it prints a line starting with `ok:`. Then reply with a short summary of the files you wrote.
 
+The check only runs the smoke test. If a requirement isn't exercised by it (a shared build, say, or a second way of using a library), you can't check it here: say in your reply which requirements weren't checked, so that the person reviewing the type checks them.
+
 For an example of a complete type, read the `bash-cli` type in the same catalog: {{CATALOG}}/bash-cli
