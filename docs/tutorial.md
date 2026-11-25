@@ -64,11 +64,13 @@ Created my-tool from the python-cli type.
 $ cd my-tool
 $ tests/smoke.sh
 smoke: ok
-$ PYTHONPATH=src python3 -m app --version
+$ PYTHONPATH=src python3 -m my_tool --version
 my-tool 0.1.0
+$ ls src
+my_tool
 ```
 
-The command and the project are named `my-tool`. The Python package inside is called `app`, because a Python package name can't contain a dash; `my-tool/README.md` says how to rename it.
+The command and the project are named `my-tool`, and the Python package inside is `my_tool`, because a Python package name can't contain a dash. The type's template writes the package as `src/{{NAME_SNAKE}}/`, and repo-kickoff turns `{{NAME_SNAKE}}` into the name with underscores for dashes, just as it turns `{{NAME}}` into the name itself.
 
 ## How python-cli got there: teaching a type
 
@@ -86,7 +88,7 @@ Review it, then commit it to keep it: git -C ~/repo-kickoff add types/python-cli
 Created demo from the python-cli type.
 ```
 
-It took about eight minutes. The type was then reviewed and committed, which is why your clone has it. Asking for `python-cli` again, as you did above, uses the catalog and never calls Claude.
+It took about eight minutes. The type was then reviewed and committed, which is why your clone has it. (Claude first named the package `app`, since repo-kickoff then had no `{{NAME_SNAKE}}`; the type was changed to use it afterwards.) Asking for `python-cli` again, as you did above, uses the catalog and never calls Claude.
 
 To teach a type of your own, ask for it at a terminal and answer `y`, or add `--yes`. Then review `types/<type>/`, and commit it so that every clone gets it.
 
@@ -149,4 +151,4 @@ repo-kickoff: to have the AI command add it, run again with --yes (or at a termi
 - [README.md](../README.md): every option, the catalog's layout, and adding a type by hand
 - `repo-kickoff --help`
 
-Outputs from a run of 73e0846 (2026-11-24), and a recorded run from 2026-11-24.
+Outputs from runs of 73e0846 and 4046b53 (2026-11-24), and a recorded run from 2026-11-24.
