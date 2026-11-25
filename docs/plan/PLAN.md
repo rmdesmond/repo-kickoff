@@ -1,6 +1,6 @@
 # Plan: repo-kickoff
 
-Status: accepted 2026-11-25
+Status: draft
 
 repo-kickoff creates the starting skeleton of a new repository from a known project type: a bash CLI, a Python CLI, a C CLI, a C++ library, a PDF generator and so on. You run `repo-kickoff` with a type and a name, as arguments or answered at prompts, and it assembles the target repository from reusable components kept in its own catalog, with no AI involved. When asked for a type it doesn't know, it asks Claude (`claude -p`) to add that type to the catalog, checks the result, and then generates the target repository from it the same AI-free way. From then on the type is created without the AI. Taught types are written into your local clone of repo-kickoff, for you to review and commit.
 
@@ -16,6 +16,8 @@ In:
 - requirements passed to the AI when teaching a type (`--hint`)
 - the `python-cli` type using `{{NAME_SNAKE}}` for its package name
 - a `c-cli` type: a C command-line program built with CMake, with GoogleTest unit tests, taught by Claude
+- a `c-lib` type: a C library built with CMake, with GoogleTest unit tests and an installable CMake package, written with Claude
+- GoogleTest installed in CI, so the C types' gtest tests run there
 - tests for all of the above, including the AI path through a fake AI
 
 Out:
@@ -31,7 +33,7 @@ Out:
 - **Language:** bash, compatible with bash 3.2 (macOS's default) and bash 4 and 5 (Linux). No associative arrays, `${var,,}`, `mapfile` or other bash 4 features.
 - **Tools:** only POSIX tools that behave the same on BSD (macOS) and GNU (Linux): no `sed -i`, no `readlink -f`. No Python, Node or other runtime.
 - **Templates:** plain `{{NAME}}` and `{{NAME_SNAKE}}` placeholders, replaced with `sed`. No template engine (decision 0008).
-- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is optional: `c-cli` uses an installed copy when there is one, and its smoke test runs the gtest tests only then (decision 0009).
+- **Types' own tools:** a type's smoke test may need its language's usual tools (`python3`; cmake and a C and C++ compiler), but never a network. GoogleTest is optional for `c-cli`: it uses an installed copy when there is one, and its smoke test runs the gtest tests only then (decision 0009). `c-lib` requires it for its tests, and CI installs it (decision 0010).
 - **AI:** `claude` is needed only to teach an unknown type. Known types work without it and without a network.
 - **Lint:** `shellcheck`.
 - **Tests:** a plain bash test runner, `tests/run.sh`, not `bats`. CI runs on Linux; work-issue runs the same commands locally on macOS.
@@ -54,7 +56,7 @@ Test levels: unit (single behaviours of `repo-kickoff`, run against fixture cata
 | lint | yes | `git ls-files -z 'bin/*' '*.sh' \| xargs -0 -r shellcheck` |
 | build | no | bash scripts; nothing to compile |
 | unit | from T-001 | `tests/run.sh unit` |
-| integration | from T-005 | `tests/run.sh integration` |
+| integration | from T-005 | `tests/run.sh integration`; from T-022, `tests/ensure-googletest.sh && tests/run.sh integration` |
 
 Extra stages: none
 
@@ -256,3 +258,35 @@ Depends on: T-020
 Done when:
 - [x] Through the symlink on `PATH`, `repo-kickoff c-cli my-tool` creates a repository that builds with `cmake -S . -B build && cmake --build build`
 - [x] The built program prints `my-tool: placeholder - nothing implemented yet`
+
+## M6: A C library type
+
+Release: v0.5.0
+
+`repo-kickoff c-lib <name>` gives a C library built with CMake, with GoogleTest unit tests and a CMake package that other projects find with `find_package`, and CI runs the C types' gtest tests.
+
+### T-022: Install GoogleTest for the integration stage
+Depends on: none
+Done when:
+- [ ] `tests/ensure-googletest.sh` exits 0 when GoogleTest is installed; on Linux without it, installs `libgtest-dev` with `apt-get` (through `sudo` when not root); elsewhere it exits 1 naming `brew install googletest`
+- [ ] The `integration` stage's `run` is `tests/ensure-googletest.sh && tests/run.sh integration`, and the pipeline is rendered again
+- [ ] In CI, `c-cli`'s smoke test runs its gtest tests, not the "skipped" path
+- [ ] Unit tests cover the installed, installed-by-apt and not-found paths, with `apt-get` and `sudo` replaced by stubs
+
+### T-023: Add the c-lib type
+Depends on: T-022
+Done when:
+- [ ] `types/c-lib/`, written with Claude and reviewed, has a one-line description and a template: a C11 library built with CMake, static by default and shared with `-DBUILD_SHARED_LIBS=ON`; a public header `include/{{NAME_SNAKE}}.h` with `{{NAME_SNAKE}}_` names and an `extern "C"` block; and a README and `.gitignore`
+- [ ] Its unit tests are GoogleTest (`tests/{{NAME_SNAKE}}_test.cpp`), run by `ctest`; they're built when it's the top-level project, from an installed GoogleTest, or downloaded with `FetchContent` only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off
+- [ ] Used from another project (`add_subdirectory`, `FetchContent`), its tests aren't built, so that project doesn't need GoogleTest or C++
+- [ ] `cmake --install` installs the header, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
+- [ ] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
+- [ ] `repo-kickoff --check-type c-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [ ] The tutorial's catalog listings include `c-lib`
+
+### T-024: Integration test: build, install and use a generated C library
+Depends on: T-023
+Done when:
+- [ ] Through the symlink on `PATH`, `repo-kickoff c-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
+- [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
+- [ ] The repository has `include/my_lib.h` and `src/my_lib.c`, and no file still holds a `{{` placeholder
