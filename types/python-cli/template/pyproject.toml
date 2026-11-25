@@ -10,10 +10,10 @@ requires-python = ">=3.8"
 dynamic = ["version"]
 
 [project.scripts]
-"{{NAME}}" = "app.cli:main"
+"{{NAME}}" = "{{NAME_SNAKE}}.cli:main"
 
 [tool.setuptools.dynamic]
-version = { attr = "app.__version__" }
+version = { attr = "{{NAME_SNAKE}}.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

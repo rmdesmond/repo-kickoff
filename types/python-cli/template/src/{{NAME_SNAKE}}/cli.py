@@ -6,7 +6,7 @@ yet: it prints a placeholder line. Replace that with the real work.
 
 import argparse
 
-from app import __version__
+from {{NAME_SNAKE}} import __version__
 
 PROG = "{{NAME}}"
 

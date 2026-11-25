@@ -22,11 +22,13 @@ PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 PYTHONDONTWRITEBYTECODE=1
 export PYTHONPATH PYTHONDONTWRITEBYTECODE
 
+module="{{NAME_SNAKE}}"
+
 run() {
-	"$python" -m app "$@"
+	"$python" -m "$module" "$@"
 }
 
-out=$(run) || fail "python -m app exited non-zero"
+out=$(run) || fail "python -m $module exited non-zero"
 [ "$out" = "{{NAME}}: placeholder - nothing implemented yet" ] ||
 	fail "unexpected output: $out"
 
