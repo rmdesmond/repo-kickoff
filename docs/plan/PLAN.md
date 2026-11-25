@@ -288,9 +288,9 @@ Done when:
 ### T-024: Integration test: build, install and use a generated C library
 Depends on: T-023
 Done when:
-- [ ] Through the symlink on `PATH`, `repo-kickoff c-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
-- [ ] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
-- [ ] The repository has `include/my_lib.h` and `src/my_lib.c`, and no file still holds a `{{` placeholder
+- [x] Through the symlink on `PATH`, `repo-kickoff c-lib my-lib` creates a repository that builds with `cmake -S . -B build && cmake --build build`, whose gtest tests pass with `ctest`, and which installs a `my-lib` CMake package
+- [x] A program built against it with `add_subdirectory` prints `my-lib: placeholder - nothing implemented yet`, without building the library's tests
+- [x] The repository has `include/my_lib.h` and `src/my_lib.c`, and no file still holds a `{{` placeholder
 
 ### T-025: Require GoogleTest in the c-cli type
 Depends on: T-022
