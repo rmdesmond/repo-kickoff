@@ -277,13 +277,13 @@ Done when:
 ### T-023: Add the c-lib type
 Depends on: T-022
 Done when:
-- [ ] `types/c-lib/`, written with Claude and reviewed, has a one-line description and a template: a C11 library built with CMake, static by default and shared with `-DBUILD_SHARED_LIBS=ON`; a public header `include/{{NAME_SNAKE}}.h` with `{{NAME_SNAKE}}_` names and an `extern "C"` block; and a README and `.gitignore`
-- [ ] Its unit tests are GoogleTest (`tests/{{NAME_SNAKE}}_test.cpp`), run by `ctest`; they're built when it's the top-level project, from an installed GoogleTest, or downloaded with `FetchContent` only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off
-- [ ] Used from another project (`add_subdirectory`, `FetchContent`), its tests aren't built, so that project doesn't need GoogleTest or C++
-- [ ] `cmake --install` installs the header, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
-- [ ] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
-- [ ] `repo-kickoff --check-type c-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
-- [ ] The tutorial's catalog listings include `c-lib`
+- [x] `types/c-lib/`, written with Claude and reviewed, has a one-line description and a template: a C11 library built with CMake, static by default and shared with `-DBUILD_SHARED_LIBS=ON`; a public header `include/{{NAME_SNAKE}}.h` with `{{NAME_SNAKE}}_` names and an `extern "C"` block; and a README and `.gitignore`
+- [x] Its unit tests are GoogleTest (`tests/{{NAME_SNAKE}}_test.cpp`), run by `ctest`; they're built when it's the top-level project, from an installed GoogleTest, or downloaded with `FetchContent` only when the developer opts in; with neither, configuring fails with a message saying how to get it or turn the tests off
+- [x] Used from another project (`add_subdirectory`, `FetchContent`), its tests aren't built, so that project doesn't need GoogleTest or C++
+- [x] `cmake --install` installs the header, the library and a CMake package, so another project uses `find_package(<name>)` and links `{{NAME_SNAKE}}::{{NAME_SNAKE}}`
+- [x] Its `tests/smoke.sh` never downloads: it builds, runs the gtest tests with `ctest`, installs into a temporary prefix, and builds and runs a program against the installed package
+- [x] `repo-kickoff --check-type c-lib` passes on macOS with GoogleTest from Homebrew, and in CI; the template's shell files pass shellcheck
+- [x] The tutorial's catalog listings include `c-lib`
 
 ### T-024: Integration test: build, install and use a generated C library
 Depends on: T-023
