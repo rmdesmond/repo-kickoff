@@ -3,7 +3,7 @@ tracker: github
 owner: rmdesmond
 repo: repo-kickoff
 default_branch: main
-visibility: private
+visibility: public
 merge_method: squash
 release:
   versioning: semver

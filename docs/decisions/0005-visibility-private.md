@@ -1,7 +1,7 @@
 # 0005: Keep the repository private
 
 Date: 2026-11-24
-Status: accepted
+Status: superseded by 0012
 
 ## Context
 
